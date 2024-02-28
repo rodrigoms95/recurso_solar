@@ -3,7 +3,10 @@
 # Stop at first error.
 set -e
 
+# Datos originales.
 name="NSRDB"
+# Datos con corrección de cuantiles
+#name="NSRDB_quantile"
 path_nsrdb="results/"$name"/*"
 path_temp="temp/"
 path_netcdf=$path_temp"NetCDF/"
