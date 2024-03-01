@@ -3,7 +3,10 @@
 # Stop at first error.
 set -e
 
+# Datos originales.
 name="NSRDB"
+# Datos con corrección de cuantiles
+#name="NSRDB_quantile"
 path_temp="temp/"
 path_netcdf=$path_temp"NetCDF/"
 path_nsrdb="results/"$name".nc"
@@ -12,7 +15,7 @@ y_i=1998
 y_f=2022
 
 echo
-echo "Generación de NetCDF con datos TMY..."
+echo "Generación de NetCDF con datos TMY"
 echo
 
 # Limpiamos los datos temporales.
@@ -26,9 +29,10 @@ echo "Generando archivos TMY..."
 echo
 for lat in ${latitud[@]}; do
     for lon in ${longitud[@]}; do
-    cdo sellonlatbox,$lon,$lon,$lat,$lat $path_nsrdb $path_netcdf$lat"_"$lon".nc"
-    python code/TMY.py $lat $lon $y_i $y_f
-    rm -r -f $path_netcdf$lat"_"$lon".nc"
+        echo "Procesando coordenadas "$lat"°"$lon"°..."
+        cdo -s sellonlatbox,$lon,$lon,$lat,$lat $path_nsrdb $path_netcdf$lat"_"$lon".nc"
+        python code/TMY.py $lat $lon $y_i $y_f
+        rm -r -f $path_netcdf$lat"_"$lon".nc"
     done
 done
 

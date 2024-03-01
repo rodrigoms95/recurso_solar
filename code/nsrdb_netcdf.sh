@@ -5,26 +5,33 @@ set -e
 
 # Datos originales.
 name="NSRDB"
-# Datos con corrección de cuantiles
-#name="NSRDB_quantile"
-path_nsrdb="results/"$name"/*"
+# Datos para corrección de cuantiles
+#name="NSRDB_2"
+path_nsrdb="temp/"$name"/*"
 path_temp="temp/"
 path_netcdf=$path_temp"NetCDF/"
 output="results/"$name".nc"
 y_i=1998
+#y_i=2006
 y_f=2022
 
 echo
-echo "Convirtiendo de CSV a NetCDF..."
+echo "Conversión de CSV a NetCDF"
 echo
 
 # Limpiamos los datos temporales.
 rm -r -f $path_temp
 mkdir -p $path_netcdf
 
+# Unimos los años en un solo archivo.
+echo "Uniendo archivos de años..."
+python code/nsrdb_mergetime.py $name $y_i $y_f
+echo
+
 # Convertimos cada conjunto de CSV en NetCDF.
 for file in $path_nsrdb; do
-    echo "Procesando coordenadas ${file##*/}..."
+    base_name=${file%.*}
+    echo "Procesando coordenadas ${base_name##*/}..."
     python code/nsrdb_netcdf.py $file $y_i $y_f
 done
 
@@ -41,7 +48,7 @@ cdo -s ymonsum $output $path_temp$name"_sum.nc"
 python code/mean.py $name $y_i $y_f
 
 echo
-echo "Conversión terminada."
+echo "Conversión de CSV a NetCDF terminada."
 echo
 
 # Limpiamos los datos temporales.
