@@ -2,6 +2,7 @@
 
 import os
 import sys
+import warnings
 
 import itertools as it
 
@@ -10,7 +11,51 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 import scipy.stats as stats
+from scipy.optimize import fsolve
 import scipy.interpolate as interp
+
+# Escondemos las advertencias.
+warnings.filterwarnings("ignore", category = RuntimeWarning)
+
+# Funciones psicrométricas.
+
+# Constantes
+Rw  = 461.4 
+Ra  = 286.9
+Lv  = 2501
+cpa = 1.006 
+cpv = 1.86
+
+# Presión de vapor de saturación.
+def Pvs( T ): # Pa
+    return ( np.exp( 77.3450 + 0.0057 * (T + 273.15) - 7235 / (T + 273.15) )
+        / (T + 273.15) ** 8.2 )
+
+# Humedad absoluta
+def rs( T, P ): # g/kg
+    return ( ( 1000 * (Ra/Rw) * Pvs(T) ) / ( P - Pvs(T) ) )
+
+
+# Humedad relativa con punto de rocío.
+def Hr_Tr(df):
+    return ( 100 * rs( df["Dew Point"], df["Pressure"] * 100 )
+        / rs( df["Temperature"], df["Pressure"] * 100 ) )
+
+# Punto de rocío a partir de humedad relativa.
+def Tr_Hr(df):
+    r_sd = ( 0.01 * df["Relative Humidity"]
+        * rs( df["Temperature"], df["Pressure"] * 100 ) )
+    T_r  = df["Temperature"].copy()
+    for row in df.itertuples():
+        T_r.loc[row.Index] = fsolve(
+            lambda T: rs(T, row.Pressure * 100) - r_sd.loc[row.Index],
+            x0 = row.Temperature - 5)[0]
+    return T_r
+
+# Humedad absoluta a partir de relativa.
+def r_Hr(df):
+    return ( 0.01 * df["Relative Humidity"]
+        * rs( df["Temperature"], df["Pressure"] * 100 ) )
 
 # Datos.
 y_i = sys.argv[1]
@@ -20,29 +65,34 @@ path_r = "temp/NetCDF/"
 files = os.listdir(path_d)
 if ".DS_Store" in files: files.remove(".DS_Store")
 for f in files:
+    print(f"Procesando coordenadas {f[:-4]}...")
     lat = f[0:5]
     lon = f[-10:-4]
     years  = list( range( int(y_i), int(y_f) + 1) )
     months = list( range(1, 13) )
-    columns = [ "Temperature", "Dew Point",
-        "Wind Speed", "GHI", "Wind Direction" ]
 
     # Cargamos el archivo.
     df = pd.read_csv( path_d + f, index_col = "time", parse_dates = True,
         infer_datetime_format = True )
+    
+    if not "Dew Point" in df.columns:
+        if "Relative Humidity" in df.columns:
+            df["Dew Point"] = Tr_Hr(df).round( decimals = 2 )    
+            df = df.drop( "Relative Humidity", axis = 1 )  
 
     # Obtenemos la información diaria.
-    vnames = [ "GHI", "T_max", "T_min", "T_mean", 
+    vnames = [ "GHI", "DNI", "T_max", "T_min", "T_mean", 
         "Dp_min", "Dp_max", "Dp_mean", "W_max", "W_mean" ]
     df_d = df[ [vnames[0]] ].resample("D").sum()
-    df_d[vnames[1]] = df[ "Temperature" ].resample("D").min()
-    df_d[vnames[2]] = df[ "Temperature" ].resample("D").max()
-    df_d[vnames[3]] = df[ "Temperature" ].resample("D").mean()
-    df_d[vnames[4]] = df[ "Dew Point"   ].resample("D").min()
-    df_d[vnames[5]] = df[ "Dew Point"   ].resample("D").max()
-    df_d[vnames[6]] = df[ "Dew Point"   ].resample("D").mean()
-    df_d[vnames[7]] = df[ "Wind Speed"  ].resample("D").max()
-    df_d[vnames[8]] = df[ "Wind Speed"  ].resample("D").mean()
+    df_d[vnames[1]] = df[ vnames[1]     ].resample("D").sum()
+    df_d[vnames[2]] = df[ "Temperature" ].resample("D").min()
+    df_d[vnames[3]] = df[ "Temperature" ].resample("D").max()
+    df_d[vnames[4]] = df[ "Temperature" ].resample("D").mean()
+    df_d[vnames[5]] = df[ "Dew Point"   ].resample("D").min()
+    df_d[vnames[6]] = df[ "Dew Point"   ].resample("D").max()
+    df_d[vnames[7]] = df[ "Dew Point"   ].resample("D").mean()
+    df_d[vnames[8]] = df[ "Wind Speed"  ].resample("D").max()
+    df_d[vnames[9]] = df[ "Wind Speed"  ].resample("D").mean()
 
     # Cálculo del estadístico Finkelstein-Schafer.
 
@@ -91,8 +141,8 @@ for f in files:
     #weights = np.array( [ [ 12/24, 1/24, 1/24, 2/24, 1/24,
     #    1/24, 2/24, 2/24, 2/24 ] ] ).T
     # Método NSRDB.
-    weights = np.array( [ [ 10/24, 1/24, 1/24, 2/24, 1/24,
-        1/24, 2/24, 1/24, 1/24 ] ] ).T
+    weights = np.array( [ [ 5/24, 5/24, 1/24, 1/24,
+        2/24, 1/24, 1/24, 2/24, 1/24, 1/24 ] ] ).T
 
     # Aplicamos los pesos, umamos el estadístico de cada año
     # para todas las variables y lo ordenamos de menor a mayor.
@@ -245,29 +295,23 @@ for f in files:
     
         # Suavizamos 6 horas con un spline.
         x   = months
-        y_1 = ( list( df_tmy.iloc[-6:, -2].values )
-            + list( df_m.iloc[0:6, -2].values ) )
-        y_2 = ( list( df_tmy.iloc[-6:, -1].values )
-            + list( df_m.iloc[0:6, -1].values ) )
-        z_1 = interp.splev( x, interp.splrep( x, y_1, s = 10 ) )
-        z_2 = interp.splev( x, interp.splrep( x, y_2, s = 10 ) )
-        df_tmy.iloc[-6:, -2] = z_1[0:6]
-        df_tmy.iloc[-6:, -1] = z_2[0:6]
-        df_m.iloc[  0:6, -2] = z_1[6:]
-        df_m.iloc[  0:6, -2] = z_2[6:]
+        for c in ["Temperature", "Pressure", "Wind Direction",
+            "Wind Speed", "Dew Point"]:
+            y = ( list( df_tmy.loc[ df_tmy.index[-6:], c ].values )
+                + list(   df_m.loc[   df_m.index[0:6], c ].values ) )
+            z = interp.splev( x, interp.splrep( x, y, s = 10 ) )
+            df_tmy.loc[ df_tmy.index[-6:], c ] = z[0:6]
+            df_m.loc[     df_m.index[0:6], c ] = z[6:]
 
         df_m["year"] = row.year
     
         # Unimos los meses.
         df_tmy = df_tmy.append( df_m )
 
-    # Damos formato a la tabla.
-    #df_tmy["year"] = df_tmy["year"].astype(int)
-    #df_tmy["month"] = df_tmy.index.month
-    #df_tmy["day"] = df_tmy.index.day
-    #df_tmy["hour"] = df_tmy.index.hour
-    #df_tmy = df_tmy[ ["year", "month", "day", "hour"] + columns
-    #    ].reset_index( drop = True )
+    # Pasamos de punto de rocío a humedades absolutas y relativas.
+    df_tmy["Relative Humidity"] = Hr_Tr( df_tmy )
+    df_tmy = df_tmy.drop("Dew Point", axis = 1)
+    df_tmy["Absolute Humidity"] = r_Hr( df_tmy )
 
     # Convertimos a Dataset.
     df_tmy = df_tmy.reset_index()
@@ -275,8 +319,6 @@ for f in files:
     df_tmy["lon"] = float(lon)
     ds = df_tmy.set_index( ["time", "lat", "lon"]
         ).astype( float ).round( decimals = 1 ).to_xarray()
-    #ds = df_tmy.set_index( ["lat", "lon", "month", "day", "hour"] ).astype(
-    #    float ).round( decimals = 1 ).to_xarray()
     ds["lat"] = ds["lat"].assign_attrs( standard_name = "latitude",
         long_name = "Latitude", units = "degrees" )
     ds["lon"] = ds["lon"].assign_attrs(standard_name = "longitude",

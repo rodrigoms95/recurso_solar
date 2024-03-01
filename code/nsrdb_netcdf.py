@@ -14,8 +14,6 @@ lat = name[-16:-11]
 lon = name[-10:-4]
 years  = list( range( int(sys.argv[2]), int(sys.argv[3]) + 1) )
 months = list( range(1, 13) )
-columns = [ "Year", "Month", "Day", "Hour", "Minute",
-    "Temperature", "Dew Point", "Wind Speed", "GHI" ]
 
 df = pd.read_csv( name, index_col = "time", parse_dates = True,
     infer_datetime_format = True ).reset_index()
