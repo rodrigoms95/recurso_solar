@@ -54,7 +54,7 @@ df_q = df_q.reset_index()
 df_q["lat" ] = float(lat)
 df_q["lon"] = float(lon)
 ds = df_q.set_index( ["time", "lat", "lon"]
-    ).astype( float ).round( decimals = 1 ).to_xarray()
+    ).astype( float ).round( decimals = 2 ).to_xarray()
 ds["lat"] = ds["lat"].assign_attrs( standard_name = "latitude",
     long_name = "Latitude", units = "degrees" )
 ds["lon"] = ds["lon"].assign_attrs(standard_name = "longitude",

@@ -4,9 +4,9 @@
 set -e
 
 # Datos originales.
-name="NSRDB"
+#name="NSRDB"
 # Datos para corrección de cuantiles
-#name="NSRDB_2"
+name="NSRDB_2"
 path_nsrdb="temp/"$name"/*"
 path_temp="temp/"
 path_netcdf=$path_temp"NetCDF/"
