@@ -32,22 +32,28 @@ df_r = xr.open_dataset( f"{path_d[1]}" ).to_dataframe(
 df_q = df_r.copy()
 # Iteramos para todas las columnas.
 for v in df_d.columns:
-    # Ordenamos los valores originales incluyendo el tiempo.
-    df_i = df_d[ [v] ].sort_values(v).reset_index()
+    # Ordenamos los valores originales y destino incluyendo el tiempo.
+    if v in ["DNI", "GHI"]:
+        df_i = df_d[[v]].where( df_d[[v]] > 0, np.nan
+            ).dropna().sort_values(v).reset_index()
+        df_j = df_r[[v]].where( df_r[[v]] > 0, np.nan
+            ).dropna().sort_values(v).reset_index()
+    else:
+        df_i = df_d[[v]].sort_values(v).reset_index()
+        df_j = df_r[[v]].sort_values(v).reset_index()
     # Calculamos la distribución acumulada.
     df_i["CDF"] = np.linspace( 1 / df_i.shape[0] , 1, df_i.shape[0] )
-
-    # Ordenamos los valores destino incluyendo el tiempo.
-    df_j = df_r[ [v] ].sort_values(v).reset_index()
-    # Calculamos la distribución acumulada.
     df_j["CDF"] = np.linspace( 1 / df_j.shape[0] , 1, df_j.shape[0] )
 
     # Interpolamos los valores de la distribución origen a la destino.
-    df_j["Cuant"] = np.interp( df_j["CDF"], df_i["CDF"],
-        df_i[v] ).round( decimals = 1 )
+    df_j["Quant"] = np.interp( df_j["CDF"], df_i["CDF"],
+        df_i[v] ).round( decimals = 2 )
     # Reordenamos los valores.
-    df_q[v] = df_j.sort_values("time").set_index( "time" ).drop( [v, "CDF"],
-        axis = 1 ).rename( {"Cuant": v}, axis = 1 )
+    df_q[v] = df_j.sort_values("time").set_index("time").drop( [v, "CDF"],
+        axis = 1 ).rename( {"Quant": v}, axis = 1 )
+    
+df_q["DNI"] = df_q["DNI"].where( df_q["DNI"] > 0, 0 )
+df_q["GHI"] = df_q["GHI"].where( df_q["GHI"] > 0, 0 )
 
 # Convertimos a Dataset.
 df_q = df_q.reset_index()
