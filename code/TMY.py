@@ -33,7 +33,7 @@ def Pvs( T ): # Pa
     return ( np.exp( 77.3450 + 0.0057 * (T + 273.15) - 7235 / (T + 273.15) )
         / (T + 273.15) ** 8.2 )
 
-# Humedad absoluta
+# Humedad absoluta de saturación.
 def rs( T, P ): # g/kg
     return ( ( 1000 * (Ra/Rw) * Pvs(T) ) / ( P - Pvs(T) ) )
 

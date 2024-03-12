@@ -11,7 +11,8 @@ path_1="results/"$name_1".nc"
 path_2="results/"$name_2".nc"
 path_temp="temp/"
 path_netcdf=$path_temp"NetCDF/"
-output="results/"$name"_quantile.nc"
+output_1="results/"$name_1"_mapped.nc"
+output_2="results/"$name_1"_quantiles.nc"
 y_i=2006
 y_f=2022
 
@@ -42,14 +43,15 @@ done
 # Unimos todos los NetCDF.
 echo
 echo "Uniendo todas las coordenadas..."
-cdo -O -s collgrid $path_netcdf"*" $output
+cdo -O -s collgrid $path_netcdf"*_mapped.nc" $output_1
+cdo -O -s collgrid $path_netcdf"*_quantiles.nc" $output_2
 
 # Obtenemos el promedio.
 echo
 echo "Obteniendo los promedios..."
-cdo -s ymonmean $output $path_temp$name_1"_quantile_mean.nc"
-cdo -s ymonsum $output $path_temp$name_1"_quantile_sum.nc"
-python code/mean.py $name_1"_quantile" $y_i $y_f
+cdo -s ymonmean $output_1 $path_temp$name_1"_mapped_mean.nc"
+cdo -s ymonsum $output_1 $path_temp$name_1"_mapped_sum.nc"
+python code/mean.py $name_1"_mapped" $y_i $y_f
 
 echo
 echo "Corrección de cuantiles terminada."

@@ -23,8 +23,8 @@ df["lat" ] = float(lat)
 df["lon"] = float(lon)
 ds = df.set_index( ["time", "lat", "lon"]).astype(float).round(
     decimals = 1 ).to_xarray()
-ds["lat"] = ds["lat"].assign_attrs( standard_name= "latitude",
-        long_name = "Latitude", units="degrees" )
-ds["lon"] = ds["lon"].assign_attrs(standard_name= "longitude",
-        long_name = "Longitude", units="degrees" )
-ds.to_netcdf(f"temp/NetCDF/{lat}_{lon}.nc")
+ds["lat"] = ds["lat"].assign_attrs( standard_name = "latitude",
+        long_name = "Latitude", units = "degrees" )
+ds["lon"] = ds["lon"].assign_attrs( standard_name = "longitude",
+        long_name = "Longitude", units = "degrees" )
+ds.to_netcdf( f"temp/NetCDF/{lat}_{lon}.nc" )
