@@ -6,13 +6,6 @@ import numpy as np
 import pandas as pd
 
 import xarray as xr
-
-# Inicializamos el dashboard de cómputo distribuido.
-from dask.distributed import Client
-c_lat = 1
-c_lon = 1
-client = Client( n_workers = 1, threads_per_worker = 5, memory_limit = "7GB" )
-
 # Funciones trigonométricas.
 def sin(x): return np.sin(np.radians(x))
 def cos(x): return np.cos(np.radians(x))
@@ -25,15 +18,15 @@ TZ = 0
 
 # Cargamos el archivo.
 n = 8
-path_d = "../temp/quantile_prep/"
-path_r = "../temp/radiacion/"
-path_v = "../temp/quantile_vars/"
+path_d = "temp/quantile_prep/"
+path_r = "temp/radiacion/"
+path_v = "temp/quantile_vars/"
 
 files = os.listdir(path_d)
 if ".DS_Store" in files: files.remove(".DS_Store")
+f = files[0]
 
-with xr.open_dataset( path_d + files[0], chunks = {
-    "lat": c_lat, "lon": c_lon } ) as ds:
+with xr.open_dataset( path_d + f) as ds:
 
     # Calculamos el logaritmo de la temperatura de rocío
     # Presión de vapor de saturación, fórmula de Buck.
@@ -61,7 +54,7 @@ with xr.open_dataset( path_d + files[0], chunks = {
     ds = ds.drop_vars( "Pv_log_a" )
 
     # Eccentric anomaly of the earth in its orbit around the sun.
-    ds["Day_Angle"] = 6.283185 * ( ds["time"].dt.dayofyear - 1 ) / 365
+    ds["Day_Angle"] = 6.283185 * ( ds["XTIME"].dt.dayofyear - 1 ) / 365
     # Declinación.
     ds["Declination"] = ( ( 0.006918 - 0.399912 * np.cos(ds["Day_Angle"])
         + 0.070257*np.sin(ds["Day_Angle"])
@@ -75,28 +68,28 @@ with xr.open_dataset( path_d + files[0], chunks = {
         - 0.014615*np.cos(2*ds["Day_Angle"])
         -0.040849*np.sin(2*ds["Day_Angle"])) * 229.18 )
     # Longitud del punto subsolar.
-    ds["lon_subs"] = -15 * ( ds["time"].dt.hour - TZ
+    ds["lon_subs"] = -15 * ( ds["XTIME"].dt.hour - TZ
         + ds["Time_Equation"]/60 )
     # Ángulo horario.
-    ds["Hour_Angle"] = ( 15 * ( ds["time"].dt.hour - 12
-        - 0.5 + ds["Time_Equation"]/60 + ((ds["lon"]-TZ*15)*4)/60 ) )
+    ds["Hour_Angle"] = ( 15 * ( ds["XTIME"].dt.hour - 12
+        - 0.5 + ds["Time_Equation"]/60 + ((ds["XLONG"]-TZ*15)*4)/60 ) )
     ds = ds.drop_vars( "Time_Equation" )
     # Posiciones del analema solar.
     #ds["Sx"] = cos(ds["Declination"])*cos(ds["lon_subs"]-ds["lon"])
     #ds["Sy"] = ( cos(ds["lat"])*sin(ds["Declination"])
     #    - sin(ds["lat"])*cos(ds["Declination"])
     #    *cos(ds["lon_subs"]-ds["lon"]) )
-    ds["Sz"] = ( sin(ds["lat"])*sin(ds["Declination"])
-        - cos(ds["lat"])*cos(ds["Declination"])
-        *cos(ds["lon_subs"]-ds["lon"]) )
+    ds["Sz"] = ( sin(ds["XLAT"])*sin(ds["Declination"])
+        - cos(ds["XLAT"])*cos(ds["Declination"])
+        *cos(ds["lon_subs"]-ds["XLONG"]) )
     ds = ds.drop_vars( "lon_subs" )
     # Ángulo del cénit solar.
     ds["Zenith_Angle"] = acos(ds["Sz"])
     ds = ds.drop_vars( "Sz" )
     # Ángulo acimutal solar.
     ds["Azimuth_Angle"] = acos( ( sin(ds["Declination"])
-        - cos(ds["Zenith_Angle"])*sin(ds["lat"]) )
-    / ( sin(ds["Zenith_Angle"])*cos(ds["lat"]) ) )
+        - cos(ds["Zenith_Angle"])*sin(ds["XLAT"]) )
+    / ( sin(ds["Zenith_Angle"])*cos(ds["XLAT"]) ) )
     ds["Azimuth_Angle"] = ds["Azimuth_Angle"].where(
         ds["Hour_Angle"] < 0, 360 - ds["Azimuth_Angle"] )
     ds = ds.drop_vars( ["Declination", "Hour_Angle"] )
@@ -149,7 +142,7 @@ with xr.open_dataset( path_d + files[0], chunks = {
     # Radiación normal directa.
     ds["DNI"] = ds["I_tr"] * ( ds["Knc"] - ds["D_Kn"] )
     ds["DNI"] = ds["DNI"].where( ds["Kt"] > 0, 0 ).where( ds["DNI"] > 0, 0
-        ).astype(np.float32).transpose( "time", "lat", "lon" )
+        ).astype(np.float32).transpose("XTIME", "south_north", "west_east")
     ds = ds.drop_vars( ["Knc", "D_Kn", "I_tr"] )
     
     # UVHI (UVA + UVB) from GHI (Foyo-Moreno et al., 1998).
@@ -160,15 +153,15 @@ with xr.open_dataset( path_d + files[0], chunks = {
     ds["UVHI"] = ( ds["I_etr_uv"]
         * np.exp( ds["a"] + ds["b"]*np.log(ds["Kt"]) ) )
     ds["UVHI"] = ds["UVHI"].where( ds["Air_Mass"] > 0, 0
-        ).astype(np.float32).transpose( "time", "lat", "lon" )
+        ).astype(np.float32).transpose("XTIME", "south_north", "west_east")
     ds = ds.drop_vars( ["a", "b", "Kt", "I_etr_uv" ] )
 
     # Modelo de Pérez de Cielo Difuso.
     azimuth_A = 180
     # Ángulo entre el panel y el sol.
     ds["Angle_of_Incidence"] = acos(
-        cos(ds["Zenith_Angle"])*cos(ds["lat"])
-        + sin(ds["Zenith_Angle"])*sin(ds["lat"])
+        cos(ds["Zenith_Angle"])*cos(ds["XLAT"])
+        + sin(ds["Zenith_Angle"])*sin(ds["XLAT"])
         *cos(ds["Azimuth_Angle"]-azimuth_A) )
     ds = ds.drop_vars( "Azimuth_Angle" )
     # Diffuse Horizontal Radiation.
@@ -195,7 +188,7 @@ with xr.open_dataset( path_d + files[0], chunks = {
     ds["epsilon"] = ds["epsilon"].where( 
         ~( (ds["bins"]>1.065) & (ds["bins"]<1.500) ), 2 )
     ds["epsilon"] = ds["epsilon"].where( ds["bins"] > 1.065, 1 )
-    Perez = pd.read_csv("Perez.csv", index_col = "bin" )
+    Perez = pd.read_csv("code/Perez.csv", index_col = "bin" )
     ds = ds.drop_vars( "bins" )
     # Extraterrestrial radiation.
     Ea = 1367
@@ -219,8 +212,8 @@ with xr.open_dataset( path_d + files[0], chunks = {
     ds["b"] = cos(ds["Angle_of_Incidence"])
     ds["b"] = ds["b"].where( ds["b"] > 0, cos(85) )
     # Radiación difusa.
-    ds["I_d"] = ( ds["DHI"] * ( (1-ds["F1"]) * ((1+cos(ds["lat"]))/2)
-        + ds["F1"]*ds["a"]/ds["b"] + ds["F2"]*sin(ds["lat"]) ) )
+    ds["I_d"] = ( ds["DHI"] * ( (1-ds["F1"]) * ((1+cos(ds["XLAT"]))/2)
+        + ds["F1"]*ds["a"]/ds["b"] + ds["F2"]*sin(ds["XLAT"]) ) )
     ds = ds.drop_vars( ["F1", "F2", "a", "b", "DHI"] )
     # Radiación directa.
     ds["I_b"] = ds["DNI"] * cos(ds["Angle_of_Incidence"])
@@ -274,7 +267,7 @@ with xr.open_dataset( path_d + files[0], chunks = {
     ds["P_mp"] = ( ds["POA"]*eff_sys*A_m *
         ( 1 + eff_T/100 * (ds["Cell_Temperature"]-25-273.15) ) )
     ds["P_mp"] = ds["P_mp"].where( ds["P_mp"] < inv_P, inv_P
-        ).astype(np.float32).transpose( "time", "lat", "lon" )
+        ).astype(np.float32).transpose("XTIME", "south_north", "west_east")
     ds = ds.drop_vars( ["Cell_Temperature", "POA"] )
 
     # Reordenamos el Dataset.
@@ -284,10 +277,10 @@ with xr.open_dataset( path_d + files[0], chunks = {
     ds["P_mp"] = ds["P_mp"].assign_attrs( units = "W" )
 
     # Guardamos el archivo.
-    # Esta línea arranca el cómputo distribuido.
-    ds.to_netcdf(path_r + files[0], mode = "w" )
-
+    ds.to_netcdf(path_r + f, mode = "w" )
+    
     # Guardamos las variables individuales.
-    ds["DNI"      ].to_netcdf( path_v + "DNI/"        + files[0], mode = "w" )
-    ds["UVHI"     ].to_netcdf( path_v + "UVHI/"       + files[0], mode = "w" )
-    ds["Dew_Point"].to_netcdf( path_v + "Dew_Point/"  + files[0], mode = "w" )
+    ds[ ["DNI"]       ].to_netcdf( path_v + "DNI/"        + f, mode = "w" )
+    ds[ ["UVHI"]      ].to_netcdf( path_v + "UVHI/"       + f, mode = "w" )
+    ds[ ["P_mp"]      ].to_netcdf( path_v + "P_mp/"       + f, mode = "w" )
+    ds[ ["Dew_Point"] ].to_netcdf( path_v + "Dew_Point/"  + f, mode = "w" )

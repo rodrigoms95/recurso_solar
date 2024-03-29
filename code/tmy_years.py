@@ -9,8 +9,8 @@ import pandas as pd
 import xarray as xr
 
 # Cargamos el archivo.
-path_d = "../temp/vars_days/"
-path_r = "../temp/TMY_years/"
+path_d = "temp/vars_days/"
+path_r = "temp/TMY_years/"
 
 #perc   = [ "0.25", "0.75" ]
 #perc_n = [ 1/4,    3/4    ] 
@@ -27,16 +27,16 @@ path_v = [ f"{path_d}{x}/" for x in vnames ]
 files = os.listdir(path_v[0])
 if ".DS_Store" in files: files.remove(".DS_Store")
 dsets = [ x + files[0] for x in path_v ]
+f = files[0]
     
-with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
-    ).rename_vars( {"XTIME": "time"}
-    ).swap_dims( {"XTIME": "time"} ) as ds:
+with xr.open_mfdataset( [ x + f for x in path_v ]
+    ).drop_dims("bnds") as ds:
 
     df = ds.to_dataframe()
 
-    latitude = df.index.get_level_values("lat").unique()
-    longitude = df.index.get_level_values("lon").unique()
-    years = df.index.get_level_values("time").year.unique()
+    latitude = df.index.get_level_values("south_north").unique()
+    longitude = df.index.get_level_values("west_east").unique()
+    years = df.index.get_level_values("XTIME").year.unique()
     N = years.shape[0]
 
     mo = np.tile( np.tile( months, len(longitude) ), len(latitude) )
@@ -45,13 +45,15 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
     y = np.zeros_like(mo)
 
     y_list = pd.DataFrame( [ la, lo, mo, y ] ).T
-    y_list.columns = [ "lat", "lon", "Month", "Year" ]
-    y_list = y_list.set_index( ["lat", "lon", "Month"] ).sort_index()
+    y_list.columns = [ "south_north", "west_east", "Month", "Year" ]
+    y_list = y_list.set_index( ["south_north",
+        "west_east", "Month"] ).sort_index()
 
     # Iteramos para cada celda.
     for lat in latitude:
         for lon in longitude:
-            df_d = df.xs( (lat, lon), level = ["lat", "lon"] )
+            df_d = df.xs( (lat, lon),
+                level = ["south_north", "west_east"] )
 
             # Cálculo del estadístico Finkelstein-Schafer.
 
@@ -77,7 +79,7 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
                         # Seleccionamos un mes para todos los años y 
                         # calculamos su distribución acumulada.
                         df_m = df_d.loc[ ( df_d.index.month == 1 ), [v]
-                            ].sort_values( v ).reset_index( drop = True
+                            ].sort_values(v).reset_index( drop = True
                             ).reset_index().rename(
                             {"index": "CDF_TOT"}, axis = 1 )
                         df_m["CDF_TOT"] = ( ( df_m["CDF_TOT"] + 1 )
@@ -135,14 +137,15 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
                 if i == 0: return x <= p
                 else:      return x >= p
 
-            # Iteramos para el caso der percentil 0.33 y 0.66, 
+            # Iteramos para el caso del percentil 0.33 y 0.66, 
             # para cada variable y para cada mes.
             #df_run = [ df_d.copy(), df_d.copy() ]
-            df_run = [ df_d[ ["GHI", "T_mean"] ].copy(),
-                df_d[ ["T_mean"] ].copy() ]
+            # solo para las variables GHI y T_mean.
+            vars_p = ["GHI", "T_mean"]
+            df_run = [ df_d[ vars_p ].copy(), df_d[ vars_p ].copy() ]
             for i in range( len(df_run) ):
                 #for v in vnames:
-                for v in ["GHI", "T_mean"]:
+                for v in vars_p:
                     for m in months:
                         # Seleccionamos un mes para todos los años y 
                         # calculamos su distribución acumulada.
@@ -186,10 +189,12 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
             df_nr = pd.concat( [c] * len(vnames),
                 axis = 1, keys = vnames )
 
-            # Iteramos para cada variable, cada mes, y cada año.   
+            # Iteramos para el percentil 0.33 y 0.66.
             for p in perc:
+                # Iteramos para cada variable, cada mes, y cada año.
                 #for v in vnames:
-                for v in ["GHI", "T_mean"]:
+                # Iteramos para cada GHI y T_mean, cada mes, y cada año.
+                for v in vars_p:
                     for m in months:
                         for y in years:
                             # Seleccionamos un mes y un año.
@@ -215,7 +220,7 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
                     :, (slice(None), slice(None), p, "number") ] ).values )
 
             # Para GHI solo se considera p = 0.33.
-            #df_nr.loc[:, ("GHI", slice(None), perc[1], "pass")] = True
+            df_nr.loc[:, ("GHI", slice(None), perc[1], "pass")] = True
 
             # Calculamos los años que hay que
             # desechar por el criterio de persistencia.
@@ -225,6 +230,12 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
                     ( slice(None), m, slice(None), "pass" ) ].all(axis = 1)
             reject = reject.where(reject == False, np.nan)
 
+            # El último mes de la corrida de WRF está
+            # incompleto por 6 horas, siempre se quita.
+            reject.iloc[-1, -1] = False
+
+            # Junio de 1993 está incompleto por 6 horas, siempre se quita.
+            reject.loc[1993, 6] = False
 
             # Obtenemos la selección final de años para el TMY.
 
@@ -241,7 +252,7 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
                     in reject[m].dropna().index ):
                     df_list.loc[m] = df_fs.loc[ ("total", n, "year"), m ]
 
-            # Iteramos para los siguientes 4 valores de FS.
+            # Iteramos para los siguientes N valores de FS.
             for n in range(2, N + 1):
                 # Solo iteramos para los meses que no pasaron el
                 # criterio de persistencia en el ciclo pasado.
@@ -262,6 +273,6 @@ with xr.open_mfdataset( dsets, drop_variables = ["XTIME_bnds"]
     ds_yl = y_list.to_xarray()
     ds_yl["Month"] = ds_yl["Month"].astype(np.int32)
     ds_yl["Year"] = ds_yl["Year"].astype(np.int32)
-    ds_yl["lat"] = ds_yl["lat"].astype(np.float32)
-    ds_yl["lon"] = ds_yl["lon"].astype(np.float32)
-    ds_yl.to_netcdf(path_r + files[0])
+    ds_yl["south_north"] = ds_yl["south_north"].astype(np.int32)
+    ds_yl["west_east"] = ds_yl["west_east"].astype(np.int32)
+    ds_yl.to_netcdf(path_r + f)

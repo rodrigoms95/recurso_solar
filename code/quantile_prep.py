@@ -6,23 +6,16 @@ import pandas as pd
 import xarray as xr
 import os
 
-# Inicializamos el dashboard de cómputo distribuido.
-from dask.distributed import Client
-c_lat = 1
-c_lon = 1
-client = Client( n_workers = 15,
-    threads_per_worker = 5, memory_limit = "500MB" )
-
 # Cargamos el archivo.
-path_d = "../data/WRF/"
-path_r = "../temp/quantile_prep/"
-path_v = "../temp/quantile_vars/"
+path_d = "data/WRF_miroc_1985_2014/"
+path_r = "temp/quantile_prep/"
+path_v = "temp/quantile_vars/"
 
 files = os.listdir(path_d)
 if ".DS_Store" in files: files.remove(".DS_Store")
+f = files[0]
 
-with xr.open_dataset( path_d + files[0], chunks = {
-    "south_north": c_lat, "west_east": c_lon } ) as ds:
+with xr.open_dataset( path_d + f ) as ds:
 
     # Creamos las variables.
     ds["Wind_Speed"] = np.sqrt( np.square(ds["U10"])
@@ -50,19 +43,14 @@ with xr.open_dataset( path_d + files[0], chunks = {
         ].assign_attrs( units = "%" )
     ds["Wind_Direction"] = ds ["Wind_Direction"
         ].assign_attrs( units = "degrees" )
-    ds = ds.rename_vars( { "XTIME": "time", "XLONG": "lon", "XLAT": "lat",
-        "T2": "Temperature", "PSFC": "Pressure", "SWDOWN": "GHI" } )
-    ds["lon"] = ds["lon"].isel({"south_north": 0})
-    ds["lat"] = ds["lat"].isel({"west_east": 0})
-    ds = ds.swap_dims( {"south_north": "lat",
-        "west_east": "lon", "XTIME": "time"} )
+    ds = ds.rename_vars( { "T2": "Temperature",
+        "PSFC": "Pressure", "SWDOWN": "GHI" } )
 
     # Guardamos el archivo.
-    # Esta línea arranca el cómputo distribuido.
-    ds.to_netcdf( path_r + files[0], mode = "w" )
+    ds.to_netcdf( path_r + f, mode = "w" )
 
     # Guardamos las variables individuales.
     vars = ["Temperature", "Pressure", "Relative_Humidity",
         "Wind_Speed", "Wind_Direction", "GHI"]
     for v in vars:
-        ds[[v]].to_netcdf( path_v + v + "/" + files[0], mode = "w" )
+        ds[[v]].to_netcdf( path_v + v + "/" + f, mode = "w" )
