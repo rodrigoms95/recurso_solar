@@ -17,7 +17,7 @@ columns = [ "Year", "Month", "Day", "Hour", "Minute", "Temperature", "GHI",
 
 # Rutas de archivos
 path_d = f"data/{name}/"
-path_r = f"temp/{name}/"
+path_r = f"temp/NSRDB/{name}/"
 if not os.path.exists(path_r): os.mkdir(path_r)
 dirs = os.listdir(path_d)
 if ".DS_Store" in dirs: dirs.remove(".DS_Store")
@@ -29,16 +29,18 @@ for d in dirs:
     lon = d[-6:]
 
     # Unimos todos los años.
-    df = pd.DataFrame( columns = columns )
+    df = pd.DataFrame( [ [0.0] * len(columns) ], columns = columns )
     files = os.listdir(f"{path_d}{d}")
     if ".DS_Store" in files: files.remove(".DS_Store")
     for f in files:
-        df = df.append( pd.read_csv( f"{path_d}{d}/{f}", skiprows = 2 ) )
+        df = pd.concat( [ df, pd.read_csv(f"{path_d}{d}/{f}", skiprows = 2) ] )
+    df = df.iloc[1:]
 
     # Convertimos a fecha.
-    df["time"] = pd.to_datetime( df["Year"].astype(str) + "/"
-        + df["Month"].astype(str) + "/" + df["Day"].astype(str)
-        + " " + df["Hour"].astype(str) + ":00:00" )
+    df["time"] = pd.to_datetime( df["Year"].astype(int).astype(str) + "/"
+        + df["Month"].astype(int).astype(str) + "/"
+        + df["Day"].astype(int).astype(str) + " "
+        + df["Hour"].astype(int).astype(str) + ":00:00" )
     
     # Corregimos formato de columnas.
     df = df.drop( columns[0:5], axis = 1 ).set_index(

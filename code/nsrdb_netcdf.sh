@@ -6,11 +6,11 @@ set -e
 # Datos originales.
 #name="NSRDB"
 # Datos para corrección de cuantiles
-name="NSRDB_2"
-path_nsrdb="temp/"$name"/*"
-path_temp="temp/"
+name="NSRDB_2km"
+path_temp="temp/NSRDB/"
+path_nsrdb="$path_temp$name/*"
 path_netcdf=$path_temp"NetCDF/"
-output="results/"$name".nc"
+output="results/$name.nc"
 y_i=1998
 #y_i=2006
 y_f=2022
@@ -41,11 +41,11 @@ echo "Uniendo todas las coordenadas..."
 cdo -O -s collgrid $path_netcdf"*" $output
 
 # Obtenemos el promedio.
-echo
-echo "Obteniendo los promedios..."
-cdo -s ymonmean $output $path_temp$name"_mean.nc"
-cdo -s ymonsum $output $path_temp$name"_sum.nc"
-python code/mean.py $name $y_i $y_f
+#echo
+#echo "Obteniendo los promedios..."
+#cdo -s ymonmean $output $path_temp$name"_mean.nc"
+#cdo -s ymonsum $output $path_temp$name"_sum.nc"
+#python code/mean.py $name $y_i $y_f
 
 echo
 echo "Conversión de CSV a NetCDF terminada."
