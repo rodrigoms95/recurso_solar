@@ -26,4 +26,4 @@ ds["lat"] = ds["lat"].assign_attrs( standard_name = "latitude",
         long_name = "Latitude", units = "degrees" )
 ds["lon"] = ds["lon"].assign_attrs( standard_name = "longitude",
         long_name = "Longitude", units = "degrees" )
-ds.to_netcdf( f"temp/NSRDB/NetCDF/{lat}_{lon}.nc" )
+ds.to_netcdf( f"temp/NSRDB_prep/NetCDF/{lat}_{lon}.nc" )

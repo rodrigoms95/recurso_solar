@@ -17,7 +17,7 @@ columns = [ "Year", "Month", "Day", "Hour", "Minute", "Temperature", "GHI",
 
 # Rutas de archivos
 path_d = f"data/{name}/"
-path_r = f"temp/NSRDB/{name}/"
+path_r = f"temp/NSRDB_prep/{name}/"
 if not os.path.exists(path_r): os.mkdir(path_r)
 dirs = os.listdir(path_d)
 if ".DS_Store" in dirs: dirs.remove(".DS_Store")

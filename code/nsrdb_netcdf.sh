@@ -4,13 +4,13 @@
 set -e
 
 # Datos originales.
-#name="NSRDB"
 # Datos para corrección de cuantiles
 name="NSRDB_2km"
-path_temp="temp/NSRDB/"
+path_temp="temp/NSRDB_prep/"
 path_nsrdb="$path_temp$name/*"
 path_netcdf=$path_temp"NetCDF/"
 output="results/$name.nc"
+outdir="results/$name/"
 y_i=1998
 #y_i=2006
 y_f=2022
@@ -22,6 +22,7 @@ echo
 # Limpiamos los datos temporales.
 rm -r -f $path_temp
 mkdir -p $path_netcdf
+mkdir -p $outdir
 
 # Unimos los años en un solo archivo.
 echo "Uniendo archivos de años..."
@@ -38,7 +39,9 @@ done
 # Unimos todos los NetCDF.
 echo
 echo "Uniendo todas las coordenadas..."
-cdo -O -s collgrid $path_netcdf"*" $output
+rm -r -f $output
+cdo -s -O collgrid $path_netcdf"*" $output
+#cdo -s splityear $output "$outdir/$name""_"
 
 # Obtenemos el promedio.
 #echo
@@ -52,4 +55,4 @@ echo "Conversión de CSV a NetCDF terminada."
 echo
 
 # Limpiamos los datos temporales.
-rm -r -f $path_temp
+#rm -r -f $path_temp
