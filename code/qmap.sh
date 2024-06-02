@@ -1,1 +1,0 @@
-cdo merge "qmap_vars/WRF_miroc_1985_2014_00054/*" "qmap/WRF_miroc_1985_2014_0054.nc"
