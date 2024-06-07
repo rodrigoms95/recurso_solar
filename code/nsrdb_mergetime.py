@@ -22,35 +22,38 @@ columns = [ "Year", "Month", "Day", "Hour", "Minute", "Temperature",
 path_d = sys.argv[1]
 path_r = sys.argv[2]
 if not os.path.exists(path_r): os.mkdir(path_r)
-dirs = os.listdir(path_d)
-if ".DS_Store" in dirs: dirs.remove(".DS_Store")
+dirs = sorted(os.listdir(path_d))
 
 # Unimos los CSV.
 
 for d in dirs:
-    lat = d[0:5]
-    lon = d[6:]
-    print(f" Procesando coordenadas {lat}°N {lon}°W...    ", end = "\r")
-    
-    if not os.path.exists(f"{path_r}{lat}_{lon}.csv"):
-        # Unimos todos los años.
-        df = pd.DataFrame( [ [0.0] * len(columns) ], columns = columns )
-        files = os.listdir(f"{path_d}{d}")
-        if ".DS_Store" in files: files.remove(".DS_Store")
-        for f in files:
-            df = pd.concat( [ df, pd.read_csv( f"{path_d}{d}/{f}",
-                header = 0, names = columns ) ] )
-        df = df.iloc[1:]
-    
-        # Convertimos a fecha.
-        df["time"] = pd.to_datetime( df["Year"].astype(int).astype(str) + "/"
-            + df["Month"].astype(int).astype(str) + "/"
-            + df["Day"].astype(int).astype(str) + " "
-            + df["Hour"].astype(int).astype(str) + ":00:00" )
+    if d[0] != ".":
+        lat = d[0:5]
+        lon = d[6:]
+        print(f" Procesando coordenadas {lat}°N {lon}°W...    ", end = "\r")
         
-        # Corregimos formato de columnas.
-        df = df.drop( columns[0:5], axis = 1 ).set_index(
-            "time" ).sort_index().round( decimals = 4 )
+        if not os.path.exists(f"{path_r}/{lat}_{lon}.csv"):
+            # Unimos todos los años.
+            df = pd.DataFrame( [ [0.0] * len(columns) ], columns = columns )
+            files = sorted( os.listdir(f"{path_d}/{d}") )
+            for f in files:
+                if f[0] == ".": os.remove(f"{path_d}/{d}/{f}")
+                else:
+                    df = pd.concat( [ df, pd.read_csv( f"{path_d}/{d}/{f}",
+                        header = 0, usecols = columns ) ] )
+            df = df.iloc[1:]
         
-        # Guardamos el archivo.
-        df.to_csv(f"{path_r}{lat}_{lon}.csv")
+            # Convertimos a fecha.
+            df["time"] = pd.to_datetime( df["Year"].astype(int).astype(str)
+                + "/" + df["Month"].astype(int).astype(str) + "/"
+                + df["Day"].astype(int).astype(str) + " "
+                + df["Hour"].astype(int).astype(str) + ":00:00" )
+            
+            # Corregimos formato de columnas.
+            df = df.drop( columns[0:5], axis = 1 ).set_index(
+                "time" ).sort_index().round( decimals = 4 )
+            
+            # Guardamos el archivo.
+            df.to_csv(f"{path_r}/{lat}_{lon}.csv")
+    
+print()

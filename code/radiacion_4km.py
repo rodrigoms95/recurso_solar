@@ -9,6 +9,8 @@ import pandas as pd
 import xarray as xr
 
 i = sys.argv[1]
+n = sys.argv[2]
+internal = sys.argv[3]
 
 # Funciones trigonométricas.
 def sin(x): return np.sin(np.radians(x))
@@ -23,9 +25,10 @@ dims = ["time", "lat", "lon"]
 TZ = 0
 
 # Cargamos el archivo.
-n = 8
-path_d = f"temp/WRF_miroc_1985_2014_2km/grid/WRF_miroc_1985_2014_2km_{i}.nc"
-path_r = f"temp/radiacion/WRF_miroc_1985_2014_2km_{i}.nc"
+path_d = ( f"{internal}/WRF_miroc_1985_2014_{n}km/grid/"
+    + f"WRF_miroc_1985_2014_{n}km_{i}.nc" )
+path_r = ( f"{internal}/WRF_miroc_1985_2014_{n}km/radiacion/"
+    + f"WRF_miroc_1985_2014_{n}km_{i}.nc" )
 
 # Iteramos para todos los archivos.
     
@@ -60,12 +63,6 @@ with xr.open_dataset(path_d) as ds:
     # Ángulo del cénit solar.
     ds["Zenith_Angle"] = acos(ds["Sz"])
     ds = ds.drop_vars( "Sz" )
-    # Ángulo acimutal solar.
-    ds["Azimuth_Angle"] = acos( ( sin(ds["Declination"])
-        - cos(ds["Zenith_Angle"])*sin(ds[dims[1]]) )
-    / ( sin(ds["Zenith_Angle"])*cos(ds[dims[1]]) ) )
-    ds["Azimuth_Angle"] = ds["Azimuth_Angle"].where(
-        ds["Hour_Angle"] < 0, 360 - ds["Azimuth_Angle"] )
     ds = ds.drop_vars( ["Declination", "Hour_Angle"] )
     # Masa de aire.
     ds["Air_Mass"] = ( 1/(cos(ds["Zenith_Angle"])
@@ -83,44 +80,28 @@ with xr.open_dataset(path_d) as ds:
     I_uvcs = 78   # W m-2. 
     ds["I_tr"    ] = I_cs   * ds["F_etr"]
     ds["I_etr_uv"] = I_uvcs * ds["F_etr"]
-    ds = ds.drop_vars( ["Day_Angle", "F_etr"] )
+    ds = ds.drop_vars( ["Day_Angle", "F_etr", "Zenith_Angle"] )
 
     # NREL DISC Model: DNI from GHI (Maxwell, 1987).
     # Effective global horizontal transmittance.
     ds["Kt"] = ds["GHI"] / ds["I_tr"]
     ds["Kt"] = ds["Kt"].where( ds["Kt"] < 1, 1 )
     ds["Kt"] = ds["Kt"].where( ds["Air_Mass"] > 0, 0 )
-    # Coeficientes.
-    ds["A"] = ( -5.743 + 21.77*ds["Kt"]
-        - 27.49*ds["Kt"]**2 + 11.56*ds["Kt"]**3 )
-    ds["A_1"] = ( 0.512 - 1.56*ds["Kt"]
-        + 2.286*ds["Kt"]**2 - 2.222*ds["Kt"]**3 )
-    ds["A"] = ds["A"].where( ds["Kt"] > 0.6, ds["A_1"] )
-    ds = ds.drop_vars( "A_1" )
-    ds["B"] = ( 41.4 - 118.5*ds["Kt"]
-        + 66.05*ds["Kt"]**2 + 31.9*ds["Kt"]**3 )
-    ds["B_1"] = 0.37 + 0.962*ds["Kt"]
-    ds["B"] = ds["B"].where( ds["Kt"] > 0.6, ds["B_1"] )
-    ds = ds.drop_vars( "B_1" )
-    ds["C"] = ( -47.01 + 184.2*ds["Kt"]
-        - 222*ds["Kt"]**2 + 73.81*ds["Kt"]**3 )
-    ds["C_1"] = -0.28 + 0.932*ds["Kt"] - 2.048*ds["Kt"]**2
-    ds["C"] = ds["C"].where( ds["Kt"] > 0.6, ds["C_1"] )
-    ds = ds.drop_vars( "C_1" )
-    # Delta Kn.
-    ds["D_Kn"] = ds["A"] + ds["B"] * np.exp( ds["C"] * ds["Air_Mass"] )
-    ds = ds.drop_vars( ["A", "B", "C"] )
-    # Direct beam atmospheric transmittance under clear-sky conditions.
-    ds["Knc"] = ( 0.866 - 0.122*ds["Air_Mass"] + 0.0121*ds["Air_Mass"]**2
-        - 0.000653*ds["Air_Mass"]**3 + 0.000014*ds["Air_Mass"]**4 )
-    # Radiación normal directa.
-    ds["DNI"] = ds["I_tr"] * ( ds["Knc"] - ds["D_Kn"] )
-    ds["DNI"] = ds["DNI"].where( ds["Kt"] > 0, 0 ).where( ds["DNI"] > 0, 0
+    ds = ds.drop_vars( [ "I_tr" ] )
+
+    # UVHI (UVA + UVB) from GHI (Foyo-Moreno et al., 1998).
+    ds["a"] = ( -0.851 + 0.433*np.exp(-(ds["Air_Mass"]-0.97)/1.85)
+        +0.118*np.exp(-(ds["Air_Mass"]-0.97)/1.86) )
+    ds["b"] = 0.610 + 0.271*np.exp(-(ds["Air_Mass"]-1.05)/1.62)
+    ds["Kt"] = ds["Kt"].where( ds["Kt"] > 0, 0.00001 )
+    ds["UVHI"] = ( ds["I_etr_uv"]
+        * np.exp( ds["a"] + ds["b"]*np.log(ds["Kt"]) ) )
+    ds["UVHI"] = ds["UVHI"].where( ds["Air_Mass"] > 0, 0
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
-    ds = ds.drop_vars( ["Knc", "D_Kn", "I_tr", "Kt", "Air_Mass"] )
+    ds = ds.drop_vars( ["a", "b", "Kt", "I_etr_uv", "Air_Mass" ] )
 
     # Reordenamos el Dataset.
-    ds["DNI"] = ds["DNI"].assign_attrs( units = "W m-2" )
+    ds["UVHI"] = ds["UVHI"].assign_attrs( units = "W m-2" )
 
     # Guardamos el archivo.
     ds.to_netcdf(path_r, mode = "w" )
