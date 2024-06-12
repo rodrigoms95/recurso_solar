@@ -23,7 +23,7 @@ for f in sorted(files):
     lon = f[6:-4]
 
     print(f" Procesando coordenadas {lat}°N {lon}°W...    ", end = "\r")
-    if f[0:2] == "._": os.remove(f"{path_d}/{f}")
+    if f[0:1] == ".": os.remove(f"{path_d}/{f}")
     else:
         if not os.path.exists(f"{path_r}/{lat[0:2]}/{lat}/"):
             os.mkdir(f"{path_r}/{lat[0:2]}/{lat}/")

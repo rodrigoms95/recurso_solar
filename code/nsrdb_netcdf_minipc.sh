@@ -8,7 +8,7 @@ set -e
 name="NSRDB_4km"
 path_data="/Volumes/DATA/data/$name"
 external="/Volumes/DATA/temp/$name"
-internal="temp/$name"
+internal="/Volumes/DATA/temp/$name"
 path_csv="CSV"
 path_netcdf="NetCDF"
 path_netcdf_m="NetCDF_m"
@@ -23,11 +23,6 @@ mkdir -p "$external/$path_netcdf"
 mkdir -p "$external/$path_netcdf_m"
 mkdir -p "$external/$path_netcdf_n"
 mkdir -p "$external/$path_csv"
-
-mkdir -p "$internal/$path_netcdf"
-mkdir -p "$internal/$path_netcdf_m"
-mkdir -p "$internal/$path_netcdf_n"
-mkdir -p "$internal/$path_csv"
 
 # Unimos los años en un solo archivo.
 echo "Uniendo archivos de años..."
@@ -45,7 +40,6 @@ echo "Uniendo todas las coordenadas..."
 echo
 
 for i in {18..19}; do
-    rsync -r "$external/NetCDF/$i/" "$internal/$path_netcdf/$i/"
     for j in {0..9}; do
 
         k=97
@@ -53,8 +47,6 @@ for i in {18..19}; do
             if [ ! -f "$external/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
                 echo "Uniendo $i.$j""°N $k.$l""°W..."
                 cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
-                rm -f $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l*
-                rsync $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc $external/$path_netcdf_m/$i.$j"_"$k.$l.nc
             fi
         done
 
@@ -63,8 +55,6 @@ for i in {18..19}; do
                 if [ ! -f "$external/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
                     echo "Uniendo $i.$j""°N $k.$l""°W..."
                     cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
-                    rm -f $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l*
-                    rsync $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc $external/$path_netcdf_m/$i.$j"_"$k.$l.nc
                 fi
             done
         done
@@ -74,26 +64,18 @@ for i in {18..19}; do
             if [ ! -f "$external/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
                 echo "Uniendo $i.$j""°N $k.$l""°W..."
                 cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
-                rm -f $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l*
-                rsync $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc $external/$path_netcdf_m/$i.$j"_"$k.$l.nc
             fi
         done
         
         if [ ! -f "$external/$path_netcdf_n/$i.$j.nc" ]; then
             echo "Uniendo $i.$j""°N..."
-            rsync $external/$path_netcdf_m/$i.$j* $internal/$path_netcdf_m/
             cdo -O -P 1 collgrid $internal/$path_netcdf_m/$i.$j* $internal/$path_netcdf_n/$i.$j.nc
-            rm -f $internal/$path_netcdf_m/$i.$j*
-            rsync $internal/$path_netcdf_n/$i.$j.nc $external/$path_netcdf_n/$i.$j.nc
         fi
 
-        rm -r -f $internal/$path_netcdf/$i/$i.$j*/
     done
-    rm -r -f "$internal/$path_netcdf/$i/"
 done
 
 i=20
-rsync -r "$external/NetCDF/$i/" "$internal/$path_netcdf/$i/"
 for j in {0..6}; do
 
     k=97
@@ -101,8 +83,6 @@ for j in {0..6}; do
         if [ ! -f "$external/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
             echo "Uniendo $i.$j""°N $k.$l""°W..."
             cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
-            rm -f $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l*
-            rsync $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc $external/$path_netcdf_m/$i.$j"_"$k.$l.nc
         fi
     done
 
@@ -111,8 +91,6 @@ for j in {0..6}; do
             if [ ! -f "$external/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
                 echo "Uniendo $i.$j""°N $k.$l""°W..."
                 cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
-                rm -f $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l*
-                rsync $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc $external/$path_netcdf_m/$i.$j"_"$k.$l.nc
             fi
         done
     done
@@ -122,26 +100,17 @@ for j in {0..6}; do
         if [ ! -f "$external/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
             echo "Uniendo $i.$j""°N $k.$l""°W..."
             cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
-            rm -f $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l*
-            rsync $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc $external/$path_netcdf_m/$i.$j"_"$k.$l.nc
         fi
     done
     
     if [ ! -f "$external/$path_netcdf_n/$i.$j.nc" ]; then
         echo "Uniendo $i.$j""°N..."
-        rsync $external/$path_netcdf_m/$i.$j* $internal/$path_netcdf_m/
         cdo -O -P 1 collgrid $internal/$path_netcdf_m/$i.$j* $internal/$path_netcdf_n/$i.$j.nc
-        rm -f $internal/$path_netcdf_m/$i.$j*
-        rsync $internal/$path_netcdf_n/$i.$j.nc $external/$path_netcdf_n/$i.$j.nc
     fi
     
-    rm -r -f $internal/$path_netcdf/$i/$i.$j*/
 done
-rm -r -f "$internal/$path_netcdf/$i/"
 
-rsync -r $external/$path_netcdf_n/ $internal/$path_netcdf_n/
 cdo -P 2 collgrid $internal/$path_netcdf_n/* $internal/$name.nc
-rm -f $internal/$path_netcdf_n/*
 
 echo
 echo "$name"" unido."
