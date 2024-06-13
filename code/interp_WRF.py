@@ -11,11 +11,12 @@ import xesmf as xe
 i = sys.argv[1]
 n = sys.argv[2]
 internal = sys.argv[3]
-path_d = f"{internal}/WRF_miroc_1985_2014/"
-files = [ f"years/WRF_miroc_1985_2014_{i}.nc", f"NSRDB_{n}km_0.nc",
-    f"WRF_miroc_1985_2014_{n}km_weights.nc",
-    f"years/WRF_miroc_1985_2014_{n}km_{i}.nc" ]
-path_r = f"{internal}/WRF_miroc_1985_2014_{n}km/"
+dataset = sys.argv[4]
+path_d = f"{internal}/"
+files = [ f"years/{dataset}_{i}.nc", f"NSRDB_{n}km_0.nc",
+    f"{dataset}_{n}km_weights.nc",
+    f"years/{dataset}_{n}km_{i}.nc" ]
+path_r = f"{internal}/{dataset}_{n}km/"
 
 ds = []
 for f in files[:-1]: ds.append( xr.open_dataset(path_d + f ) )

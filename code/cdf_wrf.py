@@ -7,21 +7,20 @@ import pandas as pd
 import xarray as xr
 
 i = sys.argv[1]
-n = sys.argv[2]
-internal = sys.argv[3]
-dataset = sys.argv[4]
-directory = sys.argv[5]
+internal = sys.argv[2]
+name = sys.argv[3]
+directory = sys.argv[4]
 
-path_d = f"{internal}/{dataset}_{n}km/{directory}/"
-path_r = f"{internal}/{dataset}_{n}km/vars/"
+path_d = f"{internal}/{directory}/"
+path_r = f"{internal}/vars/"
 
 vars = [ "Pressure", "Temperature", "Wind Speed", "DNI", "GHI", "UVHI" ]
 
-with xr.open_dataset(f"{path_d}{dataset}_{n}km_{i}.nc") as ds:
+with xr.open_dataset(f"{path_d}{name}_{i}.nc") as ds:
 
     for v in vars:
 
-        if not os.path.exists(f"{path_r}{v}/{dataset}_{n}km_{i}.nc"):
+        if not os.path.exists(f"{path_r}{v}/{name}_{i}.nc"):
         
             ds_v = ds[[v]]
             df = ds[[v]].to_dataframe()
@@ -44,4 +43,4 @@ with xr.open_dataset(f"{path_d}{dataset}_{n}km_{i}.nc") as ds:
 
             ds_v["q_model"] = df["q_model"].to_xarray()
             # Guardamos el archivo.
-            ds_v.to_netcdf( f"{path_r}{v}/{dataset}_{n}km_{i}.nc", mode = "w" )
+            ds_v.to_netcdf( f"{path_r}{v}/{name}_{i}.nc", mode = "w" )

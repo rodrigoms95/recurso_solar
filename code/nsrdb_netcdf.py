@@ -22,7 +22,7 @@ for f in sorted(files):
     lat = f[:5]
     lon = f[6:-4]
 
-    print(f" Procesando coordenadas {lat}°N {lon}°W...    ", end = "\r")
+    print(f"Procesando coordenadas {lat}°N {lon}°W...")
     if f[0:1] == ".": os.remove(f"{path_d}/{f}")
     else:
         if not os.path.exists(f"{path_r}/{lat[0:2]}/{lat}/"):
@@ -46,5 +46,5 @@ for f in sorted(files):
                 ).astype(np.float32)
             ds = ds.drop_vars( ["Global Horizontal UV Irradiance (280-400nm)",
                 "Global Horizontal UV Irradiance (295-385nm)"] )
-            #ds = ds.rename_vars( {"Wind Speed": "Wind_Speed"} )
+            ds = ds.rename_vars( {"Wind Speed": "Wind_Speed"} )
             ds.to_netcdf( f"{path_r}/{lat[0:2]}/{lat}/{lat}_{lon}.nc" )

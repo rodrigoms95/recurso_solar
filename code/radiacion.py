@@ -1,4 +1,4 @@
-# Obtiene las variables DNI.
+# Obtiene las variables DNI y UVHI.
 
 import os
 import sys
@@ -9,8 +9,8 @@ import pandas as pd
 import xarray as xr
 
 i = sys.argv[1]
-n = sys.argv[2]
-internal = sys.argv[3]
+internal = sys.argv[2]
+name = sys.argv[3]
 
 # Funciones trigonométricas.
 def sin(x): return np.sin(np.radians(x))
@@ -25,10 +25,8 @@ dims = ["time", "lat", "lon"]
 TZ = 0
 
 # Cargamos el archivo.
-path_d = ( f"{internal}/WRF_miroc_1985_2014_{n}km/grid/"
-    + f"WRF_miroc_1985_2014_{n}km_{i}.nc" )
-path_r = ( f"{internal}/WRF_miroc_1985_2014_{n}km/radiacion/"
-    + f"WRF_miroc_1985_2014_{n}km_{i}.nc" )
+path_d = ( f"{internal}/grid/{name}_{i}.nc" )
+path_r = ( f"{internal}/radiacion/{name}_{i}.nc" )
 
 # Iteramos para todos los archivos.
     

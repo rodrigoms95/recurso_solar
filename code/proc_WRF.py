@@ -13,7 +13,7 @@ files = [ f"zzR_zz_Mega0{i}_Variables_Extraidas.nc",
 
 with xr.open_dataset( path + files[0] ) as ds:
 
-    ds["Wind Speed"] = np.sqrt(ds["U10"]**2 + ds["V10"]**2).astype(np.float32)
+    ds["Wind_Speed"] = np.sqrt(ds["U10"]**2 + ds["V10"]**2).astype(np.float32)
     ds["T2"] = ds["T2"] - 273.15
     ds["XLAT"] = ds["XLAT"].isel({"west_east": 0})
     ds["XLONG"] = ds["XLONG"].isel({"south_north": 0})

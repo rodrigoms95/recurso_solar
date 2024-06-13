@@ -30,7 +30,7 @@ for d in dirs:
     if d[0] != ".":
         lat = d[0:5]
         lon = d[6:]
-        print(f" Procesando coordenadas {lat}°N {lon}°W...    ", end = "\r")
+        print(f"Procesando coordenadas {lat}°N {lon}°W...")
         
         if not os.path.exists(f"{path_r}/{lat}_{lon}.csv"):
             # Unimos todos los años.
