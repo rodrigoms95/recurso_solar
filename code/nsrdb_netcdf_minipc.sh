@@ -6,8 +6,8 @@ set -e
 # Datos originales.
 # Datos para corrección de cuantiles
 name="NSRDB_4km"
-path_data="~/Datos/NSRDB/$name"
-internal="~/temp/recurso_solar/$name"
+path_data="../../Datos/NSRDB/$name"
+internal="../../temp/recurso_solar/$name"
 path_csv="CSV"
 path_netcdf="NetCDF"
 path_netcdf_m="NetCDF_m"
