@@ -23,7 +23,7 @@ mkdir -p "$internal/$path_csv"
 
 if [ ! -f "$path_data.nc" ]; then
     # Unimos los años en un solo archivo.
-    printf "\n\nUniendo archivos de años..."
+    printf "\n\nUniendo archivos de años...\n"
     python code/nsrdb_mergetime.py "$path_data" "$internal/$path_csv"
 
     # Convertimos cada conjunto de CSV en NetCDF.
