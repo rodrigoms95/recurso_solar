@@ -11,5 +11,6 @@ internal = sys.argv[2]
 name = sys.argv[3]
 path_d = f"{internal}/"
 
-xr.open_dataset( f"{internal}/{name}.nc" ).isel( {"lat": [i]} ).to_netcdf(
-    f"{internal}/grid/{name}_{i}.nc" )
+xr.open_dataset( f"{internal}/{name}.nc"
+    ).isel( {"lat": slice(9, -9), "lon": slice(8,  -10)}
+    ).isel( {"lat": [i]} ).to_netcdf( f"{internal}/grid/{name}_{i}.nc" )

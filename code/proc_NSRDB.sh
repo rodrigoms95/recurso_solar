@@ -1,9 +1,45 @@
-internal="temp"
-cdo seltimestep,1 $internal/NSRDB_4km/NSRDB_4km.nc $internal/NSRDB_2km_interp/NSRDB_4km_0.nc
-cdo seltimestep,1 $internal/NSRDB_2km/NSRDB_2km.nc $internal/NSRDB_2km_interp/NSRDB_2km_0.nc
-cdo -addc,0.001 -aexpr,"Temperature=Temperature+273.15" -delname,UVHI -selyear,2019/2022 $internal/NSRDB_4km/NSRDB_4km.nc $internal/NSRDB_2km_interp/NSRDB_4km_2019_2022_K.nc
-cdo -addc,0.001 -aexpr,"Temperature=Temperature+273.15" -selindexbox,10,-11,11,-12 $internal/NSRDB_2km/NSRDB_2km.nc $internal/NSRDB_2km_interp/NSRDB_2km_K.nc
-cdo div NSRDB_2km_interp_K.nc NSRDB_2km_K.nc
-python code/interp_NSRDB.py 0 $internal
-python code/interp_NSRDB.py "2019_2022_K" $internal
-cdo div $internal/NSRDB_2km_interp/NSRDB_2km_K.nc $internal/NSRDB_2km_interp/NSRDB_2km_2019_2022_interp_K.nc $internal/NSRDB_2km_interp/f_int_time.nc
+set -e
+
+name="NSRDB_4km"
+path_data="/Volumes/DATA/data/$name"
+external="/Volumes/DATA/temp/$name"
+internal="temp/$name"
+
+lat=$(cdo griddes "/Volumes/DATA/temp/WRF_miroc_1985_2014_4km/years/WRF_miroc_1985_2014_4km_0.nc" | awk 'NR==7{print $3}')
+directory="grid"
+mkdir -p "$external/$directory"
+mkdir -p "$internal/$directory"
+
+if [ ! -f "$external/$directory/$name""_$((lat-1)).nc" ]; then
+    printf "\n\nGenerando malla...\n"
+    rsync "$path_data.nc" "$internal/$name.nc"
+    for ((i=0;i<lat;i++)); do
+        printf " Procesando malla $((i+1))/$lat\r"
+        if [ ! -f "$external/$directory/"$name"_$i.nc" ]; then
+            python code/tot_grid.py $i $internal $name 
+            mv "$internal/$directory/"$name"_$i.nc" "$external/$directory"
+        fi
+    done
+fi
+rm -f "$internal/$name.nc"
+
+vars=("Pressure" "Temperature" "Wind Speed" "DNI" "GHI" "UVHI")
+#vars=("${(@s[ ])$(cdo showname $external/$directory/"$name"_0.nc)}")
+if [ ! -f "$external/${vars[1]}/$name""_$((lat-1)).nc" ]; then
+    printf "\n\nCalculando cuantiles...\n"
+    for v in "${vars[@]}"; do
+        mkdir -p "$internal/vars/$v"
+        mkdir -p "$external/vars/$v"
+    done
+    for ((i=0;i<lat;i++)); do
+        printf " Procesando malla $((i+1))/$lat\r"
+        if [ ! -f "$external/vars/$v/"$name"_$i.nc" ]; then
+            rsync "$external/$directory/"$name"_$i.nc" "$internal/$directory/"$name"_$i.nc"
+            python code/cdf_wrf.py $i $internal $name $directory
+            rm -f "$internal/$directory/"$name"_$i.nc"
+            for v in "${vars[@]}"; do
+                mv "$internal/vars/$v/"$name"_$i.nc" "$external/vars/$v"
+            done
+        fi
+    done
+fi
