@@ -17,6 +17,9 @@ printf "\nConversión de CSV a NetCDF"
 
 # Limpiamos los datos temporales.
 mkdir -p "$internal/$path_netcdf"
+mkdir -p "$internal/$path_netcdf/18"
+mkdir -p "$internal/$path_netcdf/19"
+mkdir -p "$internal/$path_netcdf/20"
 mkdir -p "$internal/$path_netcdf_m"
 mkdir -p "$internal/$path_netcdf_n"
 mkdir -p "$internal/$path_csv"
