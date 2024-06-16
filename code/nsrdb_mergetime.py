@@ -6,26 +6,29 @@ import sys
 import numpy as np
 import pandas as pd
 
-# Datos.
-columns = [ "Year", "Month", "Day", "Hour", "Minute", "Temperature",
-    "Dew Point", "DNI", "DHI", "GHI", "Relative Humidity",
-    "Solar Zenith Angle", "Precipitable Water", "Pressure", "Surface Albedo",
-    "Wind Direction", "Wind Speed",
-    "Global Horizontal UV Irradiance (280-400nm)",
-    "Global Horizontal UV Irradiance (295-385nm)" ]
-#columns = [ "Year", "Month", "Day", "Hour", "Minute", "DHI", "Temperature",
-#    "Dew Point", "DNI", "GHI", "Ozone", "Relative Humidity",
-#    "Solar Zenith Angle", "Surface Albedo", "Pressure", "Precipitable Water",
-#    "Wind Direction", "Wind Speed"]
+    # Datos.
 
 # Rutas de archivos
 path_d = sys.argv[1]
 path_r = sys.argv[2]
+name = sys.argv[3]
 if not os.path.exists(path_r): os.mkdir(path_r)
 dirs = sorted(os.listdir(path_d))
 
-# Unimos los CSV.
+if name == "NSRDB_4km":
+    columns = [ "Year", "Month", "Day", "Hour", "Minute", "Temperature",
+        "Dew Point", "DNI", "DHI", "GHI", "Relative Humidity",
+        "Solar Zenith Angle", "Precipitable Water", "Pressure",
+        "Surface Albedo", "Wind Direction", "Wind Speed",
+        "Global Horizontal UV Irradiance (280-400nm)",
+        "Global Horizontal UV Irradiance (295-385nm)" ]
+elif name == "NSRDB_2km":
+    columns = [ "Year", "Month", "Day", "Hour", "Minute", "DHI",
+        "Temperature", "Dew Point", "DNI", "GHI", "Ozone",
+        "Relative Humidity", "Solar Zenith Angle", "Surface Albedo",
+        "Pressure", "Precipitable Water", "Wind Direction", "Wind Speed"]
 
+# Unimos los CSV.
 for d in dirs:
     if d[0] != ".":
         lat = d[0:5]
