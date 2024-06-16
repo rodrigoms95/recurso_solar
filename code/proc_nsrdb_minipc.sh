@@ -1,6 +1,6 @@
 set -e
 
-name="NSRDB_4km"
+name="NSRDB_2km"
 path_data="~/Datos/NSRDB/$name"
 internal="~/temp/recurso_solar/$name"
 

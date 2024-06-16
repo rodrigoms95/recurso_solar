@@ -5,7 +5,7 @@ set -e
 
 # Datos originales.
 # Datos para corrección de cuantiles
-name="NSRDB_2km"
+name="NSRDB_4km"
 path_data="/Volumes/DATA/data/$name"
 external="/Volumes/DATA/temp/$name"
 internal="temp/$name"
