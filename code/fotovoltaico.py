@@ -10,6 +10,7 @@ import xarray as xr
 
 i = sys.argv[1]
 internal = sys.argv[2]
+name = sys.argv[3]
 
 # Funciones trigonométricas.
 def sin(x): return np.sin(np.radians(x))
@@ -24,10 +25,8 @@ dims = ["time", "lat", "lon"]
 TZ = 0
 
 # Cargamos el archivo.
-path_d = ( f"{internal}/WRF_miroc_1985_2014_2km/radiacion/"
-    + f"WRF_miroc_1985_2014_2km_{i}.nc" )
-path_r = ( f"{internal}/WRF_miroc_1985_2014_2km/fotovoltaico/"
-    + f"WRF_miroc_1985_2014_2km_{i}.nc" )
+path_d = ( f"{internal}/qgrid/{name}_{i}.nc" )
+path_r = ( f"{internal}/fotovoltaico/{name}_{i}.nc" )
 
 # Iteramos para todos los archivos.
     

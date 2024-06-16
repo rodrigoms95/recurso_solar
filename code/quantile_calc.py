@@ -30,9 +30,9 @@ with xr.open_dataset(path_m) as ds_m:
     with xr.open_dataset(path_d) as ds_d:
         #with xr.open_dataset(path_f) as ds_f:
 
-            df_d = ds_d.to_dataframe().sort_index()
-            df_m = ds_m.to_dataframe().sort_index()
-            #df_f = ds_f.to_dataframe().sort_index()
+            df_d = ds_d.to_dataframe().reorder_levels(dims).sort_index()
+            df_m = ds_m.to_dataframe().reorder_levels(dims).sort_index()
+            #df_f = ds_f.to_dataframe().reorder_levels(**dims).sort_index()
             #df_f["map"] = None
             df_m["map"] = None
             if sum: df_m["diff_sum"] = None
@@ -44,10 +44,7 @@ with xr.open_dataset(path_m) as ds_m:
                 dims[2] ).unique().sort_values()
 
             for lat in latitude:
-                print(f"{lat:.3f}°N")
                 for lon in longitude:
-                    print(df_m.head())
-                    print(df_d.head())
                     df_xs_m = df_m.loc[ (slice(None), lat, lon),
                         df_m.columns ].sort_values("q_model")
                     df_xs_d = df_d.loc[ (slice(None), lat, lon),

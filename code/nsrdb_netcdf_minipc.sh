@@ -33,14 +33,14 @@ if [ ! -f "$path_data.nc" ]; then
     python code/nsrdb_netcdf.py "$internal/$path_csv" "$internal/$path_netcdf"
 
     # Unimos todos los NetCDF.
-    echo "\n\nUniendo todas las coordenadas..."
+    printf "\n\nUniendo todas las coordenadas...\n"
     for i in {18..19}; do
         for j in {0..9}; do
 
             k=97
             for l in {2..9}; do
                 if [ ! -f "$internal/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
-                    printf "\n\nUniendo $i.$j""°N $k.$l""°W..."
+                    printf "\nUniendo $i.$j""°N $k.$l""°W..."
                     cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
                 fi
             done
@@ -63,7 +63,7 @@ if [ ! -f "$path_data.nc" ]; then
             done
             
             if [ ! -f "$internal/$path_netcdf_n/$i.$j.nc" ]; then
-                printf "\nUniendo $i.$j""°N..."
+                printf "\nUniendo $i.$j""°N...\n"
                 cdo -O -P 1 collgrid $internal/$path_netcdf_m/$i.$j* $internal/$path_netcdf_n/$i.$j.nc
             fi
 
@@ -76,7 +76,7 @@ if [ ! -f "$path_data.nc" ]; then
         k=97
         for l in {2..9}; do
             if [ ! -f "$internal/$path_netcdf_m/$i.$j""_$k.$l.nc" ]; then
-                printf "\n\nUniendo $i.$j""°N $k.$l""°W..."
+                printf "\nniendo $i.$j""°N $k.$l""°W..."
                 cdo -s -O -P 7 collgrid $internal/$path_netcdf/$i/$i.$j*/$i.$j*$k.$l* $internal/$path_netcdf_m/$i.$j"_"$k.$l.nc
             fi
         done
@@ -107,7 +107,6 @@ if [ ! -f "$path_data.nc" ]; then
 
     cdo -P 2 collgrid "$internal/$path_netcdf_n/"* "$internal/$name.nc"
 
-    printf "\n\n$name"" unido."
 fi
 
 if [ ! -f "$external/$name""_promedio.nc" ]; then
@@ -116,3 +115,5 @@ if [ ! -f "$external/$name""_promedio.nc" ]; then
     printf "\n\nCalculando promedio...\n"
     cdo -L -s -timavg -yearsum -selname,"$v1","$v2" "$internal/$name.nc" "$internal/$name""_promedio.nc"
 fi
+
+printf "\n\n$name"" unido."

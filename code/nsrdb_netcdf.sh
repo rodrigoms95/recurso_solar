@@ -5,7 +5,7 @@ set -e
 
 # Datos originales.
 # Datos para corrección de cuantiles
-name="NSRDB_4km"
+name="NSRDB_2km"
 path_data="/Volumes/DATA/data/$name"
 external="/Volumes/DATA/temp/$name"
 internal="temp/$name"
@@ -144,10 +144,6 @@ if [ ! -f "$path_data.nc" ]; then
     cdo -P 2 collgrid "$internal/$path_netcdf_n/"* "$internal/$name.nc"
     rsync "$internal/$name.nc" "$path_data.nc"
     rm -f "$internal/$path_netcdf_n/"*
-
-    echo
-    echo "$name"" unido."
-    echo
 fi
 
 if [ ! -f "$external/$name""_promedio.nc" ]; then
@@ -158,3 +154,9 @@ if [ ! -f "$external/$name""_promedio.nc" ]; then
     cdo -L -s -timavg -yearsum -selname,"$v1","$v2" "$internal/$name.nc" "$internal/$name""_promedio.nc"
     rsync "$internal/$name""_promedio.nc" "$external/$name""_promedio.nc"
 fi
+
+rm -f "$internal/$name.nc"
+
+echo
+    echo "$name"" unido."
+    echo
