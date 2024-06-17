@@ -1,6 +1,6 @@
 set -e
 
-data="/datos/Datos/WRF/Miroc6"
+data="/datos/rodr/Datos/WRF/Miroc6"
 n=4
 dataset="WRF_miroc_1985_2014"
 name="$dataset""_$n""km"
