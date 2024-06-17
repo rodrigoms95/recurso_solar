@@ -114,7 +114,7 @@ fi
 if [ ! -f "$external/$name""_promedio.nc" ]; then
     printf "\n\nCalculando promedio...\n"
     v1="GHI"
-    if [ $name -eq "NSRDB_4km" ]; then
+    if [ $name == "NSRDB_4km" ]; then
         v2="UVHI"
         cdo -L -s -timavg -yearsum -selname,"$v1","$v2" "$internal/$name.nc" "$internal/$name""_promedio.nc"
     else
