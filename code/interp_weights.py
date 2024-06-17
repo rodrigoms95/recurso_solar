@@ -9,14 +9,16 @@ import xarray as xr
 import xesmf as xe
 
 n = sys.argv[1]
-internal = sys.argv[2]
+internal_data = sys.argv[2]
+internal = sys.argv[3]
+dataset = sys.argV[4]
 
-path_d = f"{internal}/WRF_miroc_1985_2014/"
-files = [ "/years/WRF_miroc_1985_2014_0.nc", f"NSRDB_{n}km_0.nc" ]
-path_r = f"{internal}/WRF_miroc_1985_2014/WRF_miroc_1985_2014_{n}km_weights.nc"
+files = [ f"{internal_data}/years/{dataset}_0.nc",
+    f"{internal_data}/NSRDB_{n}km_0.nc" ]
+path_r = f"{internal}/{dataset}_{n}km_weights.nc"
 
 ds = []
-for f in files: ds.append( xr.open_dataset(path_d + f ) )
+for f in files: ds.append( xr.open_dataset( f ) )
 
 ds[0] = ds[0].isel({"lat": slice(5, -5), "lon": slice(5, -5)})
 if n == 4: ds[1] = ds[1].isel({"lat": slice(4, -5), "lon": slice(4,  -5)})

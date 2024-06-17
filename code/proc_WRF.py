@@ -7,11 +7,11 @@ import pandas as pd
 import xarray as xr
 
 i = sys.argv[1]
-path = "temp/WRF_miroc_1985_2014/"
+internal = sys.argv[2]
 files = [ f"zzR_zz_Mega0{i}_Variables_Extraidas.nc",
     f"WRF_miroc_1985_2014_{i}.nc" ]
 
-with xr.open_dataset( path + files[0] ) as ds:
+with xr.open_dataset( f"{internal}/{files[0]}" ) as ds:
 
     ds["Wind_Speed"] = np.sqrt(ds["U10"]**2 + ds["V10"]**2).astype(np.float32)
     ds["T2"] = ds["T2"] - 273.15
@@ -23,4 +23,4 @@ with xr.open_dataset( path + files[0] ) as ds:
         "west_east": "lon", "XTIME": "time" } )
     ds = ds.drop_vars( ["U10", "V10", "Q2"] )
 
-    ds.to_netcdf(path + files[1])
+    ds.to_netcdf(f"{internal}/{files[1]}")
