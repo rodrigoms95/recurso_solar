@@ -9,7 +9,7 @@ printf "\nRealizando mapeo de cuantiles...\n"
 
 lat=$(cdo griddes "$external/$model/years/$model""_0.nc" | awk 'NR==7{print $3}')
 #vars=("${(@s[ ])$(cdo showname $external/radiacion/$name""_0.nc)}")
-vars=("Pressure" "Temperature" "Wind Speed" "DNI" "GHI" "UVHI")
+vars=("Pressure" "Temperature" "Wind_Speed" "DNI" "GHI" "UVHI")
 mkdir -p "$external/$model/qgrid"
 mkdir -p "$internal/$model/qgrid"
 if [ ! -f "$external/$model/map/$v/$model""_$((lat-1)).nc" ]; then
@@ -36,53 +36,83 @@ if [ ! -f "$external/$model/map/$v/$model""_$((lat-1)).nc" ]; then
     done
 fi
 
-printf "\n\nUniendo variables y malla...\n"
 if [ ! -f "$external/$model/qgrid/$model""_$((lat-1)).nc" ]; then
+    printf "\n\nUniendo variables y malla...\n"
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$external/$model/qgrid/$model""_$i.nc" ]; then
-            rsync -r "$external/$model/qmap/"*"/$model""_$i.nc"  "$internal/$model/qmap/"*"/$model""_$i.nc"
+            for v in "${vars[@]}"; do
+                rsync -r "$external/$model/qmap/$v/$model""_$i.nc"  "$internal/$model/qmap/$v/$model""_$i.nc"
+            done
             cdo -s -P 2 merge "$internal/$model/qmap/"*"/$model""_$i.nc" "$internal/$model/qgrid/$model""_$i.nc"
-            rsync "$internal/$model/qgrid/$model""_$i.nc" "$external/$model/qgrid/$model""_$i.nc"
+            mv "$internal/$model/qgrid/$model""_$i.nc" "$external/$model/qgrid/$model""_$i.nc"
             rm -f "$internal/$model/qmap/"*"/$model""_$i.nc"
         fi
     done
-done
+fi
 
-printf "\n\nCalculando Producción fotovoltaica..\n"
 mkdir -p "$internal/$model/fotovoltaico"
 mkdir -p "$external/$model/fotovoltaico"
 if [ ! -f "$external/$model/fotovoltaico/$model""_$((lat-1)).nc" ]; then
+    printf "\n\nCalculando Producción fotovoltaica...\n"
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$external/$model/fotovoltaico/$model""_$i.nc" ]; then
             rsync "$external/$model/qgrid/$model""_$i.nc"  "$internal/$model/qgrid/$model""_$i.nc"
             python code/fotovoltaico.py $i $internal $model
-            rsync "$internal/$model/fotovoltaico/$model""_$i.nc"  "$external/$model/fotovoltaico/$model""_$i.nc"
+            rsync "$internal/$model/fotovoltaico/$model""_$i.nc" "$external/$model/fotovoltaico/$model""_$i.nc"
+            rm -f "$internal/$model/qgrid/$model""_$i.nc"
         fi
     done
 fi
 
-printf "\n\nUniendo el archivo..\n"
-rsync -r "$external/$model/fotovoltaico/"  "$internal/$model/fotovoltaico/"
-cdo collgrid "$internal/$model/fotovoltaico/"* "$external/$model/$model.nc"
-rm -r -f "$internal/$model/fotovoltaico/"*
+if  [ ! -f "$external/$model/$model.nc" ]; then
+    printf "\n\nUniendo el archivo...\n"
+    rsync -r "$external/$model/fotovoltaico/"  "$internal/$model/fotovoltaico/"
+    cdo collgrid "$internal/$model/fotovoltaico/"* "$external/$model/$model.nc"
+    rm -r -f "$internal/$model/fotovoltaico/"*
+fi
 
 #Promedios.
 printf "\n\nCalculando promedios..\n"
 v1="GHI"
 v2="UVHI"
 v3="P_mp"
-cdo selname,"$v1","$v2","$v3" "$external/$model/$model.nc" "$internal/$model/$model""_radiacion.nc"
-cdo -L -s -timavg -yearsum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_anual.nc"
-years=$(cdo nyear "$internal/$model/$model""_radiacion.nc")
-cdo -L -s -divc,$years -monsum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_mensual.nc"
+if [ ! -f "$external/$model/$model""_radiacion.nc" ]; then
+    printf "\nExtrayendo variables de radiación..."
+    cdo selname,"$v1","$v2","$v3" "$external/$model/$model.nc" "$internal/$model/$model""_radiacion.nc"
+    rsync "$internal/$model/$model""_radiacion.nc" "$external/$model/$model""_radiacion.nc"
+fi
+if [ ! -f "$internal/$model/$model""_radiacion.nc" ]; then
+    printf "\nExtrayendo variables de radiación..."
+    cp "$external/$model/$model""_radiacion.nc" "$internal/$model/$model""_radiacion.nc"
+fi
+if [ ! -f "$external/$model/$model""_anual.nc" ]; then
+    printf "\nCalculando promedio anual..."
+    cdo -L -timavg -yearsum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_anual.nc"
+    rsync "$internal/$model/$model""_anual.nc" "$external/$model/$model""_anual.nc"
+fi
+if [ ! -f "$external/$model/$model""_mensual.nc" ]; then
+    printf "\nCalculando promedios mensuales..."
+    years=$(cdo nyear "$internal/$model/$model""_radiacion.nc")
+    cdo -L -divc,$years -monsum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_mensual.nc"
+    rsync "$internal/$model/$model""_mensual.nc" "$external/$model/$model""_mensual.nc"
+fi
+if [ ! -f "$external/$model/$model""_horario.nc" ]; then
+    printf "\nCalculando promedios horarios..."
+    cdo -hourmean "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_horario.nc"
+    rsync "$internal/$model/$model""_horario.nc" "$external/$model/$model""_horario.nc"
+fi
 mkdir -p "$internal/$model/hours"
-printf "\n\nUniendo años...\n"
-cdo -s -hourmean "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_horario.nc"
-for i in {1..12}; do
-    cdo -s -L -hourmean -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours/$model""_mensual_$i.nc"
-done
-cdo -s mergetime "$internal/$model/hours/"* "$internal/$model/$model""_hora_mensual.nc"
+mkdir -p "$external/$model/hours"
+if [ ! -f "$external/$model/$model""_hora_mensual.nc" ]; then
+    printf "\nCalculando promedios horarios mensuales..."
+    for i in {1..12}; do
+        cdo -L -hourmean -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours/$model""_mensual_$i.nc"
+    done
+    rsync "$internal/$model/hours/" "$external/$model/hours/"
+    cdo -s mergetime "$internal/$model/hours/"* "$internal/$model/$model""_hora_mensual.nc"
+    rsync "$internal/$model/$model""_hora_mensual.nc" "$external/$model/$model""_hora_mensual.nc"
+fi
 
 printf "\n\nMapeo de cuantiles terminado...\n"

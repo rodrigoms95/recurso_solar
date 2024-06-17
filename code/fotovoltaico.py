@@ -25,8 +25,8 @@ dims = ["time", "lat", "lon"]
 TZ = 0
 
 # Cargamos el archivo.
-path_d = ( f"{internal}/qgrid/{name}_{i}.nc" )
-path_r = ( f"{internal}/fotovoltaico/{name}_{i}.nc" )
+path_d = ( f"{internal}/{name}/qgrid/{name}_{i}.nc" )
+path_r = ( f"{internal}/{name}/fotovoltaico/{name}_{i}.nc" )
 
 # Iteramos para todos los archivos.
     

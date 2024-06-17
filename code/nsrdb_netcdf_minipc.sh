@@ -110,10 +110,14 @@ if [ ! -f "$path_data.nc" ]; then
 fi
 
 if [ ! -f "$external/$name""_promedio.nc" ]; then
-    v1="GHI"
-    v2="UVHI"
     printf "\n\nCalculando promedio...\n"
-    cdo -L -s -timavg -yearsum -selname,"$v1","$v2" "$internal/$name.nc" "$internal/$name""_promedio.nc"
+    v1="GHI"
+    if [ $name -eq "NSRDB_4km" ]; then
+        v2="UVHI"
+        cdo -L -s -timavg -yearsum -selname,"$v1","$v2" "$internal/$name.nc" "$internal/$name""_promedio.nc"
+    else
+        cdo -L -s -timavg -yearsum -selname,"$v1" "$internal/$name.nc" "$internal/$name""_promedio.nc"
+    fi
 fi
 
 printf "\n\n$name"" unido."
