@@ -79,38 +79,47 @@ v1="GHI"
 v2="UVHI"
 v3="P_mp"
 if [ ! -f "$external/$model/$model""_radiacion.nc" ]; then
-    printf "\nExtrayendo variables de radiación..."
+    printf "\nExtrayendo variables de radiación...\n"
     cdo selname,"$v1","$v2","$v3" "$external/$model/$model.nc" "$internal/$model/$model""_radiacion.nc"
     rsync "$internal/$model/$model""_radiacion.nc" "$external/$model/$model""_radiacion.nc"
 fi
 if [ ! -f "$internal/$model/$model""_radiacion.nc" ]; then
-    printf "\nExtrayendo variables de radiación..."
+    printf "\nExtrayendo variables de radiación...\n"
     cp "$external/$model/$model""_radiacion.nc" "$internal/$model/$model""_radiacion.nc"
 fi
+if [ ! -f "$external/$model/$model""_radiacion_days.nc" ]; then
+    printf "\nCalculando valores diarios...\n"
+    cdo daysum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_radiacion_days.nc"
+    rsync "$internal/$model/$model""_radiacion_days.nc" "$external/$model/$model""_radiacion_days.nc"
+fi
+if [ ! -f "$internal/$model/$model""_radiacion_days.nc" ]; then
+    printf "\nCalculando valores diarios...\n"
+    cp "$external/$model/$model""_radiacion_days.nc" "$internal/$model/$model""_radiacion_days.nc"
+fi
 if [ ! -f "$external/$model/$model""_anual.nc" ]; then
-    printf "\nCalculando promedio anual..."
-    cdo -L -timavg -yearsum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_anual.nc"
+    printf "\nCalculando promedio anual...\n"
+    cdo -timmean "$internal/$model/$model""_radiacion_days.nc" "$internal/$model/$model""_anual.nc"
     rsync "$internal/$model/$model""_anual.nc" "$external/$model/$model""_anual.nc"
 fi
 if [ ! -f "$external/$model/$model""_mensual.nc" ]; then
-    printf "\nCalculando promedios mensuales..."
+    printf "\nCalculando promedios mensuales...\n"
     years=$(cdo nyear "$internal/$model/$model""_radiacion.nc")
-    cdo -L -divc,$years -monsum "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_mensual.nc"
+    cdo -ymonmean "$internal/$model/$model""_radiacion_days.nc" "$internal/$model/$model""_mensual.nc"
     rsync "$internal/$model/$model""_mensual.nc" "$external/$model/$model""_mensual.nc"
 fi
 if [ ! -f "$external/$model/$model""_horario.nc" ]; then
-    printf "\nCalculando promedios horarios..."
-    cdo -hourmean "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_horario.nc"
+    printf "\nCalculando promedios horarios...\n"
+    cdo -yhourmean "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_horario.nc"
     rsync "$internal/$model/$model""_horario.nc" "$external/$model/$model""_horario.nc"
 fi
 mkdir -p "$internal/$model/hours"
 mkdir -p "$external/$model/hours"
 if [ ! -f "$external/$model/$model""_hora_mensual.nc" ]; then
-    printf "\nCalculando promedios horarios mensuales..."
+    printf "\nCalculando promedios horarios mensuales...\n"
     for i in {1..12}; do
-        cdo -L -hourmean -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours/$model""_mensual_$i.nc"
+        cdo -L -yhourmean -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours/$model""_mensual_$i.nc"
     done
-    rsync "$internal/$model/hours/" "$external/$model/hours/"
+    rsync -r "$internal/$model/hours/" "$external/$model/hours/"
     cdo -s mergetime "$internal/$model/hours/"* "$internal/$model/$model""_hora_mensual.nc"
     rsync "$internal/$model/$model""_hora_mensual.nc" "$external/$model/$model""_hora_mensual.nc"
 fi
