@@ -11,7 +11,7 @@ import xesmf as xe
 n = sys.argv[1]
 internal_data = sys.argv[2]
 internal = sys.argv[3]
-dataset = sys.argV[4]
+dataset = sys.argv[4]
 
 files = [ f"{internal_data}/years/{dataset}_0.nc",
     f"{internal_data}/NSRDB_{n}km_0.nc" ]

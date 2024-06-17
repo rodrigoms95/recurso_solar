@@ -111,10 +111,12 @@ mkdir -p "$internal/$model/hours"
 mkdir -p "$external/$model/hours"
 if [ ! -f "$external/$model/$model""_horario.nc" ]; then
     printf "\nCalculando promedios horarios...\n"
-    for i in {1..24}; do
-        cdo -L -timmean -selhour,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/$model""_hora_$i.nc"
-        rsync "$internal/$model/hours/$model""_hora_$i.nc" "$external/$model/hours/$model""_hora_$i.nc"
-    fi
+    for i in {0..23}; do
+        if [ ! -f "$internal/$model/hours/$model""_hora_$i.nc" ]; then
+            cdo -L -timmean -selhour,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours/$model""_hora_$i.nc"
+        fi
+    done
+    rsync "$internal/$model/hours/" "$external/$model/hours/"
     cdo mergetime "$internal/$model/hours/"* "$internal/$model/$model""_horario.nc"
     rsync "$internal/$model/$model""_horario.nc" "$external/$model/$model""_horario.nc"
 fi
@@ -123,8 +125,10 @@ mkdir -p "$external/$model/hours_month"
 if [ ! -f "$external/$model/$model""_hora_mensual.nc" ]; then
     printf "\nCalculando promedios horarios mensuales...\n"
     for i in {1..12}; do
-        for j in {1..24}; do   
-        cdo -L -yhourmean -selhour,$j -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours_month/$model""_mes_$i""_hora_$j.nc"
+        for j in {0..23}; do   
+            if [ ! -f "$internal/$model/hours_month/$model""_mes_$i""_hora_$j.nc" ]; then
+                cdo -L -yhourmean -selhour,$j -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours_month/$model""_mes_$i""_hora_$j.nc"
+            fi
         done
     done
     rsync -r "$internal/$model/hours_month/" "$external/$model/hours_month/"
