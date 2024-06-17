@@ -105,7 +105,9 @@ if [ ! -f "$path_data.nc" ]; then
         
     done
 
-    cdo -P 2 collgrid "$internal/$path_netcdf_n/"* "$internal/$name.nc"
+    if [ ! -f "$internal/$name.nc" ]; then
+        cdo -P 2 collgrid "$internal/$path_netcdf_n/"* "$internal/$name.nc"
+    fi
 
 fi
 
