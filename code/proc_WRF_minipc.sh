@@ -8,6 +8,7 @@ internal="~/temp/recurso_solar/$name"
 
 internal_data="~/temp/recurso_solar/$dataset"
 
+
 printf "\nProcesando WRF..."
 
 directory="years"
