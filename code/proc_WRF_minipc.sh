@@ -18,7 +18,7 @@ printf "\n\nUniendo años..."
 for i in {0..5}; do
     printf "\nzzR_zz_Mega0"$i"_Variables_Extraidas"
 	if [ ! -f "$internal_data/years/$dataset""_$i.nc" ]; then
-        cdo -s -P 2 mergetime "$internal_data/zzR_zz_Mega0$i""_Variables_Extraidas/"* "$internal_data/zzR_zz_Mega0"$i"_Variables_Extraidas.nc"
+        cdo -s -P 2 mergetime "$data/zzR_zz_Mega0$i""_Variables_Extraidas/"* "$internal_data/zzR_zz_Mega0"$i"_Variables_Extraidas.nc"
 		python code/proc_WRF.py "$i"
 	fi
 done
