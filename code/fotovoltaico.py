@@ -192,7 +192,7 @@ with xr.open_dataset(path_d) as ds:
     # Eficiencia del sistema.
     eff_sys = eff_ref * eff_inv * eff
     # DC to AC Size Ratio.
-    DC_AC = 1.2
+    DC_AC = 1.1
     # Inverter size.
     inv_P = I_mp * V_mp / DC_AC
     # Potencia generada en AC.
@@ -202,6 +202,7 @@ with xr.open_dataset(path_d) as ds:
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
     # El resultando es la generación por cada kWp.
     ds["P_mp"] = ds["P_mp"] * 1000 / ( I_mp * V_mp )
+    ds["P_mp"] = ds["P_mp"].where(ds["POA"] > 0, 0)
     ds = ds.drop_vars( "Cell_Temperature" )
     ds = ds.drop_vars( "POA" )
 

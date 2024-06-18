@@ -70,7 +70,7 @@ rm -f "$internal/years/"*
 directory="radiacion"
 mkdir -p "$internal/$directory"
 mkdir -p "$external/$directory"
-if [ ! -f "$external/$directory/$name""_$((lat-1)).nc" ]; then
+if [ ! -f "$external/$name""_calc.nc" ]; then
     printf "\n\nCalculando radiación...\n"
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat\r"
@@ -78,9 +78,11 @@ if [ ! -f "$external/$directory/$name""_$((lat-1)).nc" ]; then
             rsync "$external/grid/$name""_$i.nc" "$internal/grid/$name""_$i.nc"
             python code/radiacion.py "$i" "$internal" "$name"
             rm -f "$internal/grid/$name""_$i.nc"
-            mv "$internal/$directory/$name""_$i.nc" "$external/$directory"
         fi
     done
+    rsync -r "$internal/$directory/" "$external/$directory/"
+    cdo collgrid "$internal/$directory/"* "$external/$name""_calc.nc"
+    rm -r -f "$internal/$directory/"*
 fi
 
 #vars=("${(@s[ ])$(cdo showname $external/radiacion/$name""_0.nc)}")

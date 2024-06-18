@@ -65,7 +65,7 @@ with xr.open_dataset(path_d) as ds:
     # Masa de aire.
     ds["Air_Mass"] = ( 1/(cos(ds["Zenith_Angle"])
         + 0.15/(93.885 - ds["Zenith_Angle"])**1.253 )
-        * ds["Pressure"]/1013.25 )
+        * ds["Pressure"]/101325 )
     ds["Air_Mass"] = ds["Air_Mass"].where( ds["Zenith_Angle"] < 85.5, 0 )
     # Extraterrestrial radiation factor.
     ds["F_etr"] = ( cos(ds["Zenith_Angle"]) * 
@@ -110,7 +110,8 @@ with xr.open_dataset(path_d) as ds:
         - 0.000653*ds["Air_Mass"]**3 + 0.000014*ds["Air_Mass"]**4 )
     # Radiación normal directa.
     ds["DNI"] = ds["I_tr"] * ( ds["Knc"] - ds["D_Kn"] )
-    ds["DNI"] = ds["DNI"].where( ds["Kt"] > 0, 0 ).where( ds["DNI"] > 0, 0
+    ds["DNI"] = ds["DNI"].where( ds["Kt"] > 0, 0
+        ).where( ds["DNI"] > 0, 0 ).where( ds["GHI"] > 0, 0
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
     ds = ds.drop_vars( ["Knc", "D_Kn", "I_tr"] )
 
@@ -122,6 +123,7 @@ with xr.open_dataset(path_d) as ds:
     ds["UVHI"] = ( ds["I_etr_uv"]
         * np.exp( ds["a"] + ds["b"]*np.log(ds["Kt"]) ) )
     ds["UVHI"] = ds["UVHI"].where( ds["Air_Mass"] > 0, 0
+        ).where( ds["UVHI"] > 0, 0 ).where( ds["GHI"] > 0, 0
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
     ds = ds.drop_vars( ["a", "b", "Kt", "I_etr_uv", "Air_Mass" ] )
 

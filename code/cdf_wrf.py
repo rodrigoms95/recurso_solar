@@ -14,7 +14,8 @@ directory = sys.argv[4]
 path_d = f"{internal}/{directory}/"
 path_r = f"{internal}/vars/"
 
-vars = [ "Pressure", "Temperature", "Wind_Speed", "DNI", "GHI", "UVHI" ]
+vrad = ["GHI", "DNI", "UVHI" ]
+vars = [ "Pressure", "Temperature", "Wind_Speed" ] + vrad
 
 with xr.open_dataset(f"{path_d}{name}_{i}.nc") as ds:
 
@@ -26,7 +27,7 @@ with xr.open_dataset(f"{path_d}{name}_{i}.nc") as ds:
             df = ds[[v]].to_dataframe()
 
             # A las variables de radiación les quitamos los ceros.
-            if v in vars[-2:]: df = df[ df>0 ].dropna()
+            if v in vrad: df = df[ df>0 ].dropna()
 
             latitude = df.index.get_level_values("lat").unique()
             longitude = df.index.get_level_values("lon").unique()

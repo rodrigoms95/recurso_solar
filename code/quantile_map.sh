@@ -17,7 +17,6 @@ if [ ! -f "$external/$model/qmap/${vars[5]}/$model""_$((lat-1)).nc" ]; then
     for v in "${vars[@]}"; do
         mkdir -p "$internal/$model/map_res/$v"
         mkdir -p "$internal/$model/qmap/$v"
-        mkdir -p "$internal/$model/qgrid/$v"
         mkdir -p "$external/$model/map_res/$v"
         mkdir -p "$external/$model/qmap/$v"
     done
@@ -70,7 +69,7 @@ fi
 if  [ ! -f "$external/$model/$model.nc" ]; then
     printf "\n\nUniendo el archivo...\n"
     rsync -r "$external/$model/fotovoltaico/"  "$internal/$model/fotovoltaico/"
-    cdo collgrid "$internal/$model/fotovoltaico/"* "$external/$model/$model.nc"
+    cdo collgrid "$internal/$model/fotovoltaico/"* "$external/$model/$model""_qmap.nc"
     rm -r -f "$internal/$model/fotovoltaico/"*
 fi
 
@@ -117,7 +116,7 @@ if [ ! -f "$external/$model/$model""_horario.nc" ]; then
             cdo -L -timmean -selhour,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours/$model""_hora_$i.nc"
         fi
     done
-    rsync "$internal/$model/hours/" "$external/$model/hours/"
+    rsync -r "$internal/$model/hours/" "$external/$model/hours/"
     cdo mergetime "$internal/$model/hours/"* "$internal/$model/$model""_horario.nc"
     rsync "$internal/$model/$model""_horario.nc" "$external/$model/$model""_horario.nc"
 fi
@@ -137,4 +136,4 @@ if [ ! -f "$external/$model/$model""_hora_mensual.nc" ]; then
     rsync "$internal/$model/$model""_hora_mensual.nc" "$external/$model/$model""_hora_mensual.nc"
 fi
 
-printf "\n\nMapeo de cuantiles terminado...\n"
+printf "\nMapeo de cuantiles terminado...\n"

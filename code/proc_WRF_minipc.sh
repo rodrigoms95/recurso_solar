@@ -73,6 +73,7 @@ if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
             python code/radiacion.py "$i" "$internal" "$name"
         fi
     done
+    cdo collgrid "$internal/$directory/"* "$internal/$name""_calc.nc"
 fi
 
 read -a vars <<< "$(cdo showname $internal/radiacion/$name""_0.nc)"

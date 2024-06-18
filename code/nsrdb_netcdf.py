@@ -44,6 +44,7 @@ for f in sorted(files):
                     long_name = "Latitude", units = "degrees" )
             ds["lon"] = ds["lon"].assign_attrs( standard_name = "longitude",
                     long_name = "Longitude", units = "degrees" )
+            ds["Pressure"] = ds["Pressure"] * 100
             if name == "NSRDB_4km":
                 ds["UVHI"] = (
                     ds["Global Horizontal UV Irradiance (280-400nm)"] +
