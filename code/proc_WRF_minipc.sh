@@ -12,31 +12,36 @@ printf "\nProcesando WRF..."
 
 directory="years"
 mkdir -p "$internal_data/years"
+mkdir -p "$internal_data/raw"
 mkdir -p "$internal/years"
 
-printf "\n\nUniendo años..."
-for i in {0..5}; do
-    printf "\nzzR_zz_Mega0"$i"_Variables_Extraidas"
-	if [ ! -f "$internal_data/years/$dataset""_$i.nc" ]; then
-        if [ ! -f "$internal_data/zzR_zz_Mega0"$i"_Variables_Extraidas.nc" ]; then
-            cdo -s -P 2 mergetime "$data/zzR_zz_Mega0$i""_Variables_Extraidas/"* "$internal_data/zzR_zz_Mega0"$i"_Variables_Extraidas.nc"
+if [ ! -f "$internal_data/years/$dataset""_5.nc" ]; then
+    printf "\n\nUniendo años..."
+    for i in {0..5}; do
+        printf "\nzzR_zz_Mega0"$i"_Variables_Extraidas"
+        if [ ! -f "$internal_data/years/$dataset""_$i.nc" ]; then
+            if [ ! -f "$internal_data/zzR_zz_Mega0"$i"_Variables_Extraidas.nc" ]; then
+                cdo -s -P 2 mergetime "$data/zzR_zz_Mega0$i""_Variables_Extraidas/"* "$internal_data/raw/zzR_zz_Mega0"$i"_Variables_Extraidas.nc"
+            fi
+            python code/proc_WRF.py "$i" "$internal_data"
         fi
-		python code/proc_WRF.py "$i" "$internal_data"
-	fi
-done
-
-printf "\n\nInterpolando a "$n" km..."
-i=0
-printf "\nGenerando malla de interpolación..."
-if [ ! -f "$internal/$name""_weights.nc" ]; then
-    python code/interp_weights.py "$n" "$internal_data" "$internal" "$dataset"
+    done
 fi
-for i in {0..5}; do
-    printf "\n$dataset""_$i"
-	if [ ! -f "$internal/$directory/$name""_$i.nc" ]; then
-        python code/interp_WRF.py "$i" "$n" "$internal_data" "$internal" "$dataset"
-	fi
-done
+
+if [ ! -f "$internal/$directory/$name""_5.nc" ]; then
+    printf "\n\nInterpolando a "$n" km..."
+    i=0
+    printf "\nGenerando malla de interpolación..."
+    if [ ! -f "$internal/$name""_weights.nc" ]; then
+        python code/interp_weights.py "$n" "$internal_data" "$internal" "$dataset"
+    fi
+    for i in {0..5}; do
+        printf "\n$dataset""_$i"
+        if [ ! -f "$internal/$directory/$name""_$i.nc" ]; then
+            python code/interp_WRF.py "$i" "$n" "$internal_data" "$internal" "$dataset"
+        fi
+    done
+fi
 
 lat=$(cdo griddes "$internal/$directory/$name""_0.nc" | awk 'NR==7{print $3}')
 
