@@ -65,7 +65,7 @@ with xr.open_dataset(path_d) as ds:
     # Masa de aire.
     ds["Air_Mass"] = ( 1/(cos(ds["Zenith_Angle"])
         + 0.15/(93.885 - ds["Zenith_Angle"])**1.253 )
-        * ds["Pressure"]/101325 )
+        * ds["Pressure"]/1013.25 )
     ds["Air_Mass"] = ds["Air_Mass"].where( ds["Zenith_Angle"] < 85.5, 0 )
     # Extraterrestrial radiation factor.
     ds["F_etr"] = ( cos(ds["Zenith_Angle"]) * 

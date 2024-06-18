@@ -75,7 +75,7 @@ with xr.open_dataset(path_d) as ds:
     # Masa de aire.
     ds["Air_Mass"] = ( 1/(cos(ds["Zenith_Angle"])
         + 0.15/(93.885 - ds["Zenith_Angle"])**1.253 )
-        * ds["Pressure"]/101325 )
+        * ds["Pressure"]/1013.25 )
     ds["Air_Mass"] = ds["Air_Mass"].where( ds["Zenith_Angle"] < 85.5, 0 )
     # Extraterrestrial radiation factor.
     # Extraterrestrial radiation.
@@ -119,11 +119,11 @@ with xr.open_dataset(path_d) as ds:
     Ea = 1367
     # Coeficientes.
     ds["Delta"] = ds["DHI"] * ds["Air_Mass"] / Ea
-    ds = ds.drop_vars( "Air_Mass" )
-    for i in Perez.index:
-        for j in Perez.columns:
-            ds[j] = ds["epsilon"].where(
-                ~(ds["epsilon"] == i), Perez.loc[i, j] )
+    #ds = ds.drop_vars( "Air_Mass" )
+    for j in Perez.columns:
+        ds[j] = 0.0
+        for i in Perez.index:
+            ds[j] = ds[j].where(ds["epsilon"] != i, Perez.loc[i, j] )
     ds = ds.drop_vars( "epsilon" )
     ds["F1"] = ( ds["f11"] + ds["f12"]*ds["Delta"]
         + np.radians(ds["Zenith_Angle"])*ds["f13"] )
@@ -131,16 +131,21 @@ with xr.open_dataset(path_d) as ds:
     ds["F1"] = ds["F1"].where( ds["F1"] < 0, 0 )
     ds["F2"] = ( ds["f21"] + ds["f22"]*ds["Delta"]
         + np.radians(ds["Zenith_Angle"])*ds["f23"] )
-    ds = ds.drop_vars( ["f21", "f22", "f23", "Delta"] )
+    ds = ds.drop_vars( ["f21", "f22", "f23"] )
+    #ds = ds.drop_vars( ["Delta"] )
     ds["a"] = cos(ds["Angle_of_Incidence"])
     ds["a"] = ds["a"].where( ds["a"] < 0, 0 )
     ds["b"] = cos(ds["Zenith_Angle"])
     ds["b"] = ds["b"].where( ds["b"] < cos(85), cos(85) )
-    ds = ds.drop_vars( "Zenith_Angle" )
     # Radiación difusa.
-    ds["I_d"] = ( ds["DHI"] * ( (1-ds["F1"]) * ((1+cos(ds[dims[1]]))/2)
+    ds["I_d"] = ( ds["DHI"] * ( (1-ds["F1"])*((1+cos(ds[dims[1]]))/2)
         + ds["F1"]*ds["a"]/ds["b"] + ds["F2"]*sin(ds[dims[1]]) ) )
+    ds["I_d_90"] = ( ds["DHI"] * ((1+cos(ds[dims[1]]))/2) )
+    ds["I_d"] = ds["I_d"].where( ds["Zenith_Angle"] < 87.5, ds["I_d_90"] )
+    ds = ds.drop_vars( "I_d_90" )
+    ds["I_d"] = ds["I_d"].where( ds["Zenith_Angle"] < 90, 0 )
     ds = ds.drop_vars( ["F1", "F2", "a", "b", "DHI"] )
+    ds = ds.drop_vars( "Zenith_Angle" )
     # Radiación directa.
     ds["I_b"] = ds["DNI"] * cos(ds["Angle_of_Incidence"])
     ds["I_b"] = ds["I_b"].where( ds["Angle_of_Incidence"] < 90, 0 )
@@ -197,7 +202,8 @@ with xr.open_dataset(path_d) as ds:
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
     # El resultando es la generación por cada kWp.
     ds["P_mp"] = ds["P_mp"] * 1000 / ( I_mp * V_mp )
-    ds = ds.drop_vars( ["Cell_Temperature", "POA"] )
+    ds = ds.drop_vars( "Cell_Temperature" )
+    ds = ds.drop_vars( "POA" )
 
     # Reordenamos el Dataset.
     ds["P_mp"] = ds["P_mp"].assign_attrs( units = "W" )
