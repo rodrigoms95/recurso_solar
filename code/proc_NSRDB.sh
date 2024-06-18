@@ -9,14 +9,13 @@ lat=$(cdo griddes "/Volumes/DATA/temp/WRF_miroc_1985_2014_4km/years/WRF_miroc_19
 directory="grid"
 mkdir -p "$external/$directory"
 mkdir -p "$internal/$directory"
-
 if [ ! -f "$external/$directory/$name""_$((lat-1)).nc" ]; then
     printf "\n\nGenerando malla...\n"
     rsync "$path_data.nc" "$internal/$name.nc"
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$external/$directory/"$name"_$i.nc" ]; then
-            python code/tot_grid.py $i $internal $name 
+            python code/tot_grid.py "$i" "$internal" "$internal" "$name"
             mv "$internal/$directory/"$name"_$i.nc" "$external/$directory"
         fi
     done
@@ -35,7 +34,7 @@ if [ ! -f "$external/${vars[1]}/$name""_$((lat-1)).nc" ]; then
         printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$external/vars/$v/"$name"_$i.nc" ]; then
             rsync "$external/$directory/"$name"_$i.nc" "$internal/$directory/"$name"_$i.nc"
-            python code/cdf_wrf.py $i $internal $name $directory
+            python code/cdf_wrf.py "$i" "$internal" "$name" "$directory"
             rm -f "$internal/$directory/"$name"_$i.nc"
             for v in "${vars[@]}"; do
                 mv "$internal/vars/$v/"$name"_$i.nc" "$external/vars/$v"
@@ -43,3 +42,5 @@ if [ ! -f "$external/${vars[1]}/$name""_$((lat-1)).nc" ]; then
         fi
     done
 fi
+
+printf "\n\nNSRDB procesado.\n"

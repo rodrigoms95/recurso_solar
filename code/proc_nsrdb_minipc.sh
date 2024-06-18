@@ -12,7 +12,7 @@ mkdir -p "$internal/$directory"
 if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     printf "\n\nGenerando malla..."
     for ((i=0;i<lat;i++)); do
-        printf "\nProcesando malla $((i+1))/$lat"
+        printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$internal/$directory/"$name"_$i.nc" ]; then
             python code/tot_grid.py "$i" "$internal" "$path_data" "$name" 
         fi
@@ -24,9 +24,11 @@ if [ ! -f "$internal/${vars[1]}/$name""_$((lat-1)).nc" ]; then
     printf "\n\nCalculando cuantiles..."
     for v in "${vars[@]}"; do; mkdir -p "$internal/vars/$v"; done
     for ((i=0;i<lat;i++)); do
-        printf "\n\nProcesando malla $((i+1))/$lat"
+        printf " Procesando malla $((i+1))/$lat \r"
         if [ ! -f "$internal/vars/$v/"$name"_$i.nc" ]; then
             python code/cdf_wrf.py "$i" "$internal" "$name" "$directory"
         fi
     done
 fi
+
+printf "\n\nNSRDB procesado.\n"
