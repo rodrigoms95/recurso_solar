@@ -88,7 +88,7 @@ with xr.open_dataset(path_d) as ds:
         cos(ds["Zenith_Angle"])*cos(ds[dims[1]])
         + sin(ds["Zenith_Angle"])*sin(ds[dims[1]])
         *cos(ds["Azimuth_Angle"]-azimuth_A) )
-    ds = ds.drop_vars( "Azimuth_Angle" )
+    #ds = ds.drop_vars( "Azimuth_Angle" )
     # Diffuse Horizontal Radiation.
     ds["DHI"] = ds["GHI"] - ds["DNI"] * cos(ds["Zenith_Angle"])
     ds["DHI"] = ds["DHI"].where(ds["DHI"]>0, 0.001)
@@ -128,24 +128,28 @@ with xr.open_dataset(path_d) as ds:
     ds["F1"] = ( ds["f11"] + ds["f12"]*ds["Delta"]
         + np.radians(ds["Zenith_Angle"])*ds["f13"] )
     ds = ds.drop_vars( ["f11", "f12", "f13"] )
-    ds["F1"] = ds["F1"].where( ds["Zenith_Angle"] > 0, 0 )
+    ds["F1"] = ds["F1"].where( ds["F1"] > 0, 0 )
+    #ds["F1"] = ds["F1"].where( ds["Zenith_Angle"] > 0, 0 )
     ds["F2"] = ( ds["f21"] + ds["f22"]*ds["Delta"]
         + np.radians(ds["Zenith_Angle"])*ds["f23"] )
-    ds = ds.drop_vars( ["f21", "f22", "f23", "Zenith_Angle", "Delta"] )
+    ds = ds.drop_vars( ["f21", "f22", "f23", "Delta"])#, "Zenith_Angle"] )
     ds["a"] = cos(ds["Angle_of_Incidence"])
     ds["a"] = ds["a"].where( ds["a"] > 0, 0 )
-    ds["b"] = cos(ds["Angle_of_Incidence"])
-    ds["b"] = ds["b"].where( ds["b"] > 0, cos(85) )
+    #ds["b"] = cos(ds["Angle_of_Incidence"])
+    ds["b"] = cos(ds["Zenith_Angle"])
+    ds["b"] = ds["b"].where( ds["b"] > cos(85), cos(85) )
+    #ds["b"] = ds["b"].where( ds["b"] > 0, cos(85) )
     # Radiación difusa.
     ds["I_d"] = ( ds["DHI"] * ( (1-ds["F1"]) * ((1+cos(ds[dims[1]]))/2)
         + ds["F1"]*ds["a"]/ds["b"] + ds["F2"]*sin(ds[dims[1]]) ) )
-    ds = ds.drop_vars( ["F1", "F2", "a", "b", "DHI"] )
+    ds["I_d"] = ds["I_d"].where( ds["Angle_of_Incidence"] >= 90, 0 )
+    ds = ds.drop_vars( ["F1", "F2", "a", "b"])#, "DHI"] )
     # Radiación directa.
     ds["I_b"] = ds["DNI"] * cos(ds["Angle_of_Incidence"])
-    ds = ds.drop_vars( "Angle_of_Incidence" )
+    #ds = ds.drop_vars( "Angle_of_Incidence" )
     # Radiación total en el panel.
     ds["POA"] = ds["I_b"] + ds["I_d"]
-    ds = ds.drop_vars( ["I_b", "I_d"] )
+    #ds = ds.drop_vars( ["I_b", "I_d"] )
 
     # NOCT Cell Temperature Model.
     T_NOCT    = 44 # °C
@@ -195,7 +199,7 @@ with xr.open_dataset(path_d) as ds:
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
     # El resultando es la generación por cada kWp.
     ds["P_mp"] = ds["P_mp"] * 1000 / ( I_mp * V_mp )
-    ds = ds.drop_vars( ["Cell_Temperature", "POA"] )
+    ds = ds.drop_vars( ["Cell_Temperature"])#, "POA"] )
 
     # Reordenamos el Dataset.
     ds["P_mp"] = ds["P_mp"].assign_attrs( units = "W" )

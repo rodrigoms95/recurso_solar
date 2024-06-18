@@ -5,14 +5,15 @@ model="WRF_miroc_1985_2014_4km"
 external="/Volumes/DATA/temp"
 internal="temp"
 
-printf "\nRealizando mapeo de cuantiles...\n"
+printf "\nCálculo de mapeo de cuantiles y producción fotovoltaica."
 
 lat=$(cdo griddes "$external/$model/years/$model""_0.nc" | awk 'NR==7{print $3}')
 #vars=("${(@s[ ])$(cdo showname $external/radiacion/$name""_0.nc)}")
 vars=("Pressure" "Temperature" "Wind_Speed" "DNI" "GHI" "UVHI")
 mkdir -p "$external/$model/qgrid"
 mkdir -p "$internal/$model/qgrid"
-if [ ! -f "$external/$model/map/$v/$model""_$((lat-1)).nc" ]; then
+if [ ! -f "$external/$model/qmap/${vars[5]}/$model""_$((lat-1)).nc" ]; then
+    printf "\n\nRealizando mapeo de cuantiles...\n"
     for v in "${vars[@]}"; do
         mkdir -p "$internal/$model/map_res/$v"
         mkdir -p "$internal/$model/qmap/$v"
@@ -60,8 +61,8 @@ if [ ! -f "$external/$model/fotovoltaico/$model""_$((lat-1)).nc" ]; then
         if [ ! -f "$external/$model/fotovoltaico/$model""_$i.nc" ]; then
             rsync "$external/$model/qgrid/$model""_$i.nc"  "$internal/$model/qgrid/$model""_$i.nc"
             python code/fotovoltaico.py $i $internal $model
-            rsync "$internal/$model/fotovoltaico/$model""_$i.nc" "$external/$model/fotovoltaico/$model""_$i.nc"
-            rm -f "$internal/$model/qgrid/$model""_$i.nc"
+            #rsync "$internal/$model/fotovoltaico/$model""_$i.nc" "$external/$model/fotovoltaico/$model""_$i.nc"
+            #rm -f "$internal/$model/qgrid/$model""_$i.nc"
         fi
     done
 fi

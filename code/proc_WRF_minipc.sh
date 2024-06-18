@@ -56,7 +56,7 @@ mkdir -p "$internal/$directory"
 if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     printf "\n\nUniendo años y generando malla en WRF..."
     for ((i=0;i<lat;i++)); do
-        printf "\nProcesando malla $((i+1))/$lat"
+        printf "Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$internal/$directory/$name""_$i.nc" ]; then
             python code/year2grid.py "$i" "$internal" "$name"
         fi
@@ -68,7 +68,7 @@ mkdir -p "$internal/$directory"
 if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     printf "\n\nCalculando radiación..."
     for ((i=0;i<lat;i++)); do
-        printf "\nProcesando malla $((i+1))/$lat"
+        printf "Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$internal/$directory/$name""_$i.nc" ]; then
             python code/radiacion.py "$i" "$internal" "$name"
         fi
@@ -80,7 +80,7 @@ if [ ! -f "$internal/${vars[1]}/$name""_$((lat-1)).nc" ]; then
     printf "\n\nCalculando cuantiles en WRF..."
     for v in "${vars[@]}"; do mkdir -p "$internal/vars/$v"; done
     for ((i=0;i<lat;i++)); do
-        printf "\n\nProcesando malla $((i+1))/$lat"
+        printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$internal/vars/$v/$name""_$i.nc" ]; then
             python code/cdf_wrf.py "$i" "$internal" "$name" "$directory"
         fi
@@ -94,7 +94,7 @@ v2="UVHI"
 if [ ! -f "$internal/$name""_$directory.nc" ]; then
     printf "\n\nObteniendo promedios en $name..."
     for ((i=0;i<lat;i++)); do
-        printf "\nProcesando malla $((i+1))/$lat"
+        printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$internal/$directory/$name""_$i.nc" ]; then
             cdo -L -s -timavg -yearsum -selname,"$v1","$v2" "$internal/radiacion/$name""_$i.nc" "$internal/$directory/$name""_$i.nc"
         fi
