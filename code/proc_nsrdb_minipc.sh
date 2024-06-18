@@ -1,19 +1,20 @@
 set -e
 
+printf "\nProcesamiento de NSRDB."
+
 name="NSRDB_4km"
-path_data="../../Datos/NSRDB/$name"
-internal="../../temp/recurso_solar/$name"
+path_data="datos/rodr/temp/recurso_solar/$name"
+internal="/../../temp/recurso_solar/$name"
 
 lat=$(cdo griddes "../../temp/recurso_solar/WRF_miroc_1985_2014_4km/years/WRF_miroc_1985_2014_4km_0.nc" | awk 'NR==7{print $3}')
 directory="grid"
 mkdir -p "$internal/$directory"
-
 if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     printf "\n\nGenerando malla..."
     for ((i=0;i<lat;i++)); do
         printf "\nProcesando malla $((i+1))/$lat"
         if [ ! -f "$internal/$directory/"$name"_$i.nc" ]; then
-            python code/tot_grid.py "$i" "$internal" "$name" 
+            python code/tot_grid.py "$i" "$path_data" "$internal" "$name" 
         fi
     done
 fi

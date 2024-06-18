@@ -142,10 +142,10 @@ with xr.open_dataset(path_d) as ds:
     # Radiación difusa.
     ds["I_d"] = ( ds["DHI"] * ( (1-ds["F1"]) * ((1+cos(ds[dims[1]]))/2)
         + ds["F1"]*ds["a"]/ds["b"] + ds["F2"]*sin(ds[dims[1]]) ) )
-    ds["I_d"] = ds["I_d"].where( ds["Angle_of_Incidence"] >= 90, 0 )
     ds = ds.drop_vars( ["F1", "F2", "a", "b"])#, "DHI"] )
     # Radiación directa.
     ds["I_b"] = ds["DNI"] * cos(ds["Angle_of_Incidence"])
+    ds["I_b"] = ds["I_b"].where( ds["Angle_of_Incidence"] >= 90, 0 )
     #ds = ds.drop_vars( "Angle_of_Incidence" )
     # Radiación total en el panel.
     ds["POA"] = ds["I_b"] + ds["I_d"]
