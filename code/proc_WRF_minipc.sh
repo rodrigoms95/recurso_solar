@@ -2,6 +2,7 @@ set -e
 
 data="/datos/rodr/Datos/WRF/Miroc6"
 n=4
+NSRDB="/datos/rodr/temp/recurso_solar/NSRDB_$n""km/NSRDB_$n""km.nc"
 dataset="WRF_miroc_1985_2014"
 name="$dataset""_$n""km"
 internal="../../temp/recurso_solar/$name"
@@ -14,6 +15,11 @@ directory="years"
 mkdir -p "$internal_data/years"
 mkdir -p "$internal_data/raw"
 mkdir -p "$internal/years"
+
+if [ ! -f "$internal/NSRDB_$n""km.nc" ]; then
+    printf "\n\nSeleccionando tiempo 0 en NSRDB...\n"
+    cdo -s seltimestep,0 "$NSRDB" "$internal/NSRDB_$n""km.nc"
+fi
 
 if [ ! -f "$internal_data/years/$dataset""_5.nc" ]; then
     printf "\n\nUniendo años..."
