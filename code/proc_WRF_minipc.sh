@@ -78,7 +78,7 @@ fi
 read -a vars <<< "$(cdo showname $internal/radiacion/$name""_0.nc)"
 if [ ! -f "$internal/${vars[1]}/$name""_$((lat-1)).nc" ]; then
     printf "\n\nCalculando cuantiles en WRF..."
-    for v in "${vars[@]}"; do; mkdir -p "$internal/vars/$v"; done
+    for v in "${vars[@]}"; do mkdir -p "$internal/vars/$v"; done
     for ((i=0;i<lat;i++)); do
         printf "\n\nProcesando malla $((i+1))/$lat"
         if [ ! -f "$internal/vars/$v/$name""_$i.nc" ]; then
