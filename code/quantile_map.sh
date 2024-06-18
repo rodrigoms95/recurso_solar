@@ -61,8 +61,8 @@ if [ ! -f "$external/$model/fotovoltaico/$model""_$((lat-1)).nc" ]; then
         if [ ! -f "$external/$model/fotovoltaico/$model""_$i.nc" ]; then
             rsync "$external/$model/qgrid/$model""_$i.nc"  "$internal/$model/qgrid/$model""_$i.nc"
             python code/fotovoltaico.py $i $internal $model
-            #rsync "$internal/$model/fotovoltaico/$model""_$i.nc" "$external/$model/fotovoltaico/$model""_$i.nc"
-            #rm -f "$internal/$model/qgrid/$model""_$i.nc"
+            rsync "$internal/$model/fotovoltaico/$model""_$i.nc" "$external/$model/fotovoltaico/$model""_$i.nc"
+            rm -f "$internal/$model/qgrid/$model""_$i.nc"
         fi
     done
 fi
