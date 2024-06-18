@@ -4,7 +4,7 @@ printf "\nProcesamiento de NSRDB."
 
 name="NSRDB_4km"
 path_data="datos/rodr/temp/recurso_solar/$name"
-internal="/../../temp/recurso_solar/$name"
+internal="../../temp/recurso_solar/$name"
 
 lat=$(cdo griddes "../../temp/recurso_solar/WRF_miroc_1985_2014_4km/years/WRF_miroc_1985_2014_4km_0.nc" | awk 'NR==7{print $3}')
 directory="grid"
