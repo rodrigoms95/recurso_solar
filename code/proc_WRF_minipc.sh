@@ -16,9 +16,9 @@ mkdir -p "$internal_data/years"
 mkdir -p "$internal_data/raw"
 mkdir -p "$internal/years"
 
-if [ ! -f "$internal/NSRDB_$n""km.nc" ]; then
+if [ ! -f "$internal_data/NSRDB_$n""km.nc" ]; then
     printf "\n\nSeleccionando tiempo 0 en NSRDB...\n"
-    cdo -s seltimestep,0 "$NSRDB" "$internal/NSRDB_$n""km.nc"
+    cdo -s seltimestep,0 "$NSRDB" "$internal_data/NSRDB_$n""km.nc"
 fi
 
 if [ ! -f "$internal_data/years/$dataset""_5.nc" ]; then
