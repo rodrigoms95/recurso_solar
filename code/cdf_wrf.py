@@ -14,7 +14,7 @@ directory = sys.argv[4]
 path_d = f"{internal}/{directory}/"
 path_r = f"{internal}/vars/"
 
-vars = [ "Pressure", "Temperature", "Wind Speed", "DNI", "GHI", "UVHI" ]
+vars = [ "Pressure", "Temperature", "Wind_Speed", "DNI", "GHI", "UVHI" ]
 
 with xr.open_dataset(f"{path_d}{name}_{i}.nc") as ds:
 
