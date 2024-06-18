@@ -14,7 +14,7 @@ if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     for ((i=0;i<lat;i++)); do
         printf "\nProcesando malla $((i+1))/$lat"
         if [ ! -f "$internal/$directory/"$name"_$i.nc" ]; then
-            python code/tot_grid.py "$i" "$path_data" "$internal" "$name" 
+            python code/tot_grid.py "$i" "$internal" "$path_data" "$name" 
         fi
     done
 fi
