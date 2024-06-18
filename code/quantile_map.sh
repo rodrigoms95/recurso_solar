@@ -127,7 +127,7 @@ if [ ! -f "$external/$model/$model""_hora_mensual.nc" ]; then
     for i in {1..12}; do
         for j in {0..23}; do   
             if [ ! -f "$internal/$model/hours_month/$model""_mes_$i""_hora_$j.nc" ]; then
-                cdo -L -yhourmean -selhour,$j -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours_month/$model""_mes_$i""_hora_$j.nc"
+                cdo -L -timmean -selhour,$j -selmon,$i "$internal/$model/$model""_radiacion.nc" "$internal/$model/hours_month/$model""_mes_$i""_hora_$j.nc"
             fi
         done
     done

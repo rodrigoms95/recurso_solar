@@ -18,7 +18,7 @@ mkdir -p "$internal/years"
 
 if [ ! -f "$internal_data/NSRDB_$n""km.nc" ]; then
     printf "\n\nSeleccionando tiempo 0 en NSRDB...\n"
-    cdo -s seltimestep,1 "$NSRDB" "$internal_data/NSRDB_$n""km.nc"
+    cdo -s seltimestep,1 "$NSRDB" "$internal_data/NSRDB_$n""km_0.nc"
 fi
 
 if [ ! -f "$internal_data/years/$dataset""_5.nc" ]; then
@@ -36,9 +36,9 @@ fi
 
 if [ ! -f "$internal/$directory/$name""_5.nc" ]; then
     printf "\n\nInterpolando a "$n" km..."
-    i=0
-    printf "\nGenerando malla de interpolación..."
     if [ ! -f "$internal/$name""_weights.nc" ]; then
+        i=0
+        printf "\nGenerando malla de interpolación..."
         python code/interp_weights.py "$n" "$internal_data" "$internal" "$dataset"
     fi
     for i in {0..5}; do
@@ -75,7 +75,7 @@ if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     done
 fi
 
-vars=("${(@s[ ])$(cdo showname $internal/radiacion/$name""_0.nc)}")
+read -a vars <<< "${(@s[ ])$(cdo showname $internal/radiacion/$name""_0.nc)}"
 if [ ! -f "$internal/${vars[1]}/$name""_$((lat-1)).nc" ]; then
     printf "\n\nCalculando cuantiles en WRF..."
     for v in "${vars[@]}"; do; mkdir -p "$internal/vars/$v"; done

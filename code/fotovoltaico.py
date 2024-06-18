@@ -152,7 +152,7 @@ with xr.open_dataset(path_d) as ds:
     # Datos de Panel Canadian Solar 550 W
     # Modelo: HiKu6 Mono PERC CS6W-550
     I_mp      = 13.2 # A
-    V_mp      = 41.7  # V
+    V_mp      = 41.7 # V
     A_m       = 1.134*2.278 # m^2
     eff_ref   = I_mp * V_mp / (1000 * A_m)
     tau_alpha = 0.9
@@ -190,9 +190,11 @@ with xr.open_dataset(path_d) as ds:
     inv_P = I_mp * V_mp / DC_AC
     # Potencia generada en AC.
     ds["P_mp"] = ( ds["POA"]*eff_sys*A_m *
-        ( 1 + eff_T/100 * (ds["Cell_Temperature"]-25-273.15) ) )
+        ( 1 + eff_T/100 * (ds["Cell_Temperature"]-25) ) )
     ds["P_mp"] = ds["P_mp"].where( ds["P_mp"] < inv_P, inv_P
         ).astype(np.float32).transpose(dims[0], dims[1], dims[2])
+    # El resultando es la generación por cada kWp.
+    ds["P_mp"] = ds["P_mp"] * 1000 / ( I_mp * V_mp )
     ds = ds.drop_vars( ["Cell_Temperature", "POA"] )
 
     # Reordenamos el Dataset.
