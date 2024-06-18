@@ -75,7 +75,7 @@ if [ ! -f "$internal/$directory/$name""_$((lat-1)).nc" ]; then
     done
 fi
 
-read -a vars <<< "${(@s[ ])$(cdo showname $internal/radiacion/$name""_0.nc)}"
+read -a vars <<< "$(cdo showname $internal/radiacion/$name""_0.nc)"
 if [ ! -f "$internal/${vars[1]}/$name""_$((lat-1)).nc" ]; then
     printf "\n\nCalculando cuantiles en WRF..."
     for v in "${vars[@]}"; do; mkdir -p "$internal/vars/$v"; done
