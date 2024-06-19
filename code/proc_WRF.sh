@@ -48,7 +48,6 @@ for i in {0..5}; do
         rsync "$internal/$directory/$name""_$i.nc" "$external/$directory"
 	fi
 done
-rsync "$external/$directory/$name""_$i.nc" "$internal/$directory"
 
 lat=$(cdo griddes "$external/$directory/$name""_0.nc" | awk 'NR==7{print $3}')
 
@@ -57,6 +56,7 @@ mkdir -p "$internal/$directory"
 mkdir -p "$external/$directory"
 if [ ! -f "$external/$directory/$name""_$((lat-1)).nc" ]; then
     printf "\n\nUniendo años y generando malla en WRF...\n"
+    rsync -r "$external/$years/" "$internal/$years/"
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$external/$directory/$name""_$i.nc" ]; then

@@ -26,6 +26,8 @@ path_map  = f"{internal}/{name_m}/qmap/{v}/{name_m}_{i}.nc"
 
 sum = True
 
+if v == "Wind_Speed": v = "Wind Speed"
+
 with xr.open_dataset(path_m) as ds_m:
     with xr.open_dataset(path_d) as ds_d:
         #with xr.open_dataset(path_f) as ds_f:

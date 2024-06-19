@@ -15,7 +15,10 @@ path_d = f"{internal}/{directory}/"
 path_r = f"{internal}/vars/"
 
 vrad = ["GHI", "DNI", "UVHI" ]
-vars = [ "Pressure", "Temperature", "Wind_Speed" ] + vrad
+if internal in ["temp/NSRDB_4km", "temp/WRF_miroc_1985_2014_4km"]:
+    vars = [ "Pressure", "Temperature", "Wind Speed" ] + vrad
+else:
+    vars = [ "Pressure", "Temperature", "Wind_Speed" ] + vrad
 
 with xr.open_dataset(f"{path_d}{name}_{i}.nc") as ds:
 
