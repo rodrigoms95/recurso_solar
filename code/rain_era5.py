@@ -43,4 +43,4 @@ for y in [ f"{x}" for x in range(1950, 2020) ]:
             ],
             'format': 'grib',
         },
-        'download.grib')
+        f'era5-land_total-precipitation_{y}.grib')
