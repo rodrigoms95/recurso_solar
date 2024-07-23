@@ -54,7 +54,7 @@ fi
 mkdir -p "$internal/$model/fotovoltaico"
 mkdir -p "$external/$model/fotovoltaico"
 if [ ! -f "$external/$model/fotovoltaico/$model""_$((lat-1)).nc" ]; then
-    printf "\n\nCalculando Producción fotovoltaica...\n"
+    printf "\n\nCalculando producción fotovoltaica...\n"
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat\r"
         if [ ! -f "$external/$model/fotovoltaico/$model""_$i.nc" ]; then
@@ -68,7 +68,9 @@ fi
 
 if  [ ! -f "$external/$model/$model.nc" ]; then
     printf "\n\nUniendo el archivo...\n"
-    rsync -r "$external/$model/fotovoltaico/"  "$internal/$model/fotovoltaico/"
+    if  [ ! -f "$internal/$model/fotovoltaico/$model""_$((lat-1)).nc" ]; then
+        cp -r "$external/$model/fotovoltaico/"*  "$internal/$model/fotovoltaico/"
+    fi
     cdo collgrid "$internal/$model/fotovoltaico/"* "$external/$model/$model""_qmap.nc"
     rm -r -f "$internal/$model/fotovoltaico/"*
 fi

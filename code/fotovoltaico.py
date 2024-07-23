@@ -119,7 +119,7 @@ with xr.open_dataset(path_d) as ds:
     Ea = 1367
     # Coeficientes.
     ds["Delta"] = ds["DHI"] * ds["Air_Mass"] / Ea
-    #ds = ds.drop_vars( "Air_Mass" )
+    ds = ds.drop_vars( "Air_Mass" )
     for j in Perez.columns:
         ds[j] = 0.0
         for i in Perez.index:
@@ -132,7 +132,7 @@ with xr.open_dataset(path_d) as ds:
     ds["F2"] = ( ds["f21"] + ds["f22"]*ds["Delta"]
         + np.radians(ds["Zenith_Angle"])*ds["f23"] )
     ds = ds.drop_vars( ["f21", "f22", "f23"] )
-    #ds = ds.drop_vars( ["Delta"] )
+    ds = ds.drop_vars( ["Delta"] )
     ds["a"] = cos(ds["Angle_of_Incidence"])
     ds["a"] = ds["a"].where( ds["a"] < 0, 0 )
     ds["b"] = cos(ds["Zenith_Angle"])

@@ -1,6 +1,6 @@
 set -e
 
-printf "\nProcesamiento de NSRDB."
+printf "\nProcesamiento de NSRDB.\n"
 
 name="NSRDB_4km"
 path_data="/datos/rodr/temp/recurso_solar/$name"
@@ -21,7 +21,7 @@ fi
 
 read -a vars <<< "$(cdo showname $internal/$directory/$name""_0.nc)"
 if [ ! -f "$internal/${vars[-1]}/$name""_$((lat-1)).nc" ]; then
-    printf "\n\nCalculando cuantiles..."
+    printf "\n\nCalculando cuantiles...\n"
     for v in "${vars[@]}"; do mkdir -p "$internal/vars/$v"; done
     for ((i=0;i<lat;i++)); do
         printf " Procesando malla $((i+1))/$lat \r"
