@@ -15,8 +15,7 @@ if not os.path.exists(carpeta_destino): os.mkdir(carpeta_destino)
 #lat = np.arange(18.09, 20.69, 0.04)
 #lon = np.arange(-100.46, -97.259, 0.04)
 # Conjunto de datos 2 km, duck curve 
-#lat = np.arange(14.54, 42.02, 0.02)
-lat = np.arange(27.42, 42.02, 0.02)
+lat = np.arange(14.54, 42.02, 0.02)
 lon = np.arange(-124.41, -86.69, 0.02)
 
 # Años a descargar
@@ -46,26 +45,20 @@ base = "full-disc-download"
 attributes = ( "air_temperature,dni,ghi,surface_pressure,wind_speed" )
 
 # API key
-#api_key = "vGnsS1lJcyC5dRKax0H9QIs5e6ottm05OB3uzRRL"
-#api_key = "rzX1wbpMOa9fbeBqDfSk3TRcQSf40Ql7ZDk4t50v"
-api_key = "XmMWV5ub8RTjyqBGPsjMtmrizT2LaHlhRrxdxylj"
+api_key = "rzX1wbpMOa9fbeBqDfSk3TRcQSf40Ql7ZDk4t50v"
 
 # Leap year
 leap_year = "true"
 # Coordinated Universal Time (UTC)
 utc = "false"
 # Full name
-#name = "Ariadna+Porras+Cervantes"
-#name = "Rodrigo+Munoz"
-name = "Rodrigo+Sanchez"
+name = "Rodrigo+Munoz"
 # Reason for using the NSRDB.
 reason = "beta+testing"
 # Affiliation
 affiliation = "UNAM"
 # Email address
-#email = "aporrasunam@gmail.com"
-#email = "rodrigo.munoz@ingenieria.unam.edu"
-email = "rodrigoms95@gmail.com"
+email = "rodrigo.munoz@ingenieria.unam.edu"
 # Mailing list
 mailing_list = "false"
 
