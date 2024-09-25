@@ -45,20 +45,20 @@ base = "full-disc-download"
 attributes = ( "air_temperature,dni,ghi,surface_pressure,wind_speed" )
 
 # API key
-api_key = "rzX1wbpMOa9fbeBqDfSk3TRcQSf40Ql7ZDk4t50v"
+api_key = "XmMWV5ub8RTjyqBGPsjMtmrizT2LaHlhRrxdxylj"
 
 # Leap year
 leap_year = "true"
 # Coordinated Universal Time (UTC)
 utc = "false"
 # Full name
-name = "Rodrigo+Munoz"
+name = "Rodrigo+Sanchez"
 # Reason for using the NSRDB.
 reason = "beta+testing"
 # Affiliation
 affiliation = "UNAM"
 # Email address
-email = "rodrigo.munoz@ingenieria.unam.edu"
+email = "rodrigoms95@gmail.com"
 # Mailing list
 mailing_list = "false"
 
