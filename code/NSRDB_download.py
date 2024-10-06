@@ -89,9 +89,10 @@ for i in lat:
                     f"&mailing_list={mailing_list}&reason={reason}&api_key=" +
                     f"{api_key}&attributes={attributes}" )
                 # Descargamos archivo csv del url 
-                try: df = pd.read_csv(url,skiprows=2)
-                # Si no es una coordenada válida no descargamos y seguimso
-                except: pass
+                #try:
+                df = pd.read_csv(url,skiprows=2)
+                # Si no es una coordenada válida no descargamos y seguimos
+                #except: pass
                 # Guardamoa archivo CSV en la subcarpeta
-                else:
-                    df.to_csv(ruta_archivo, index = False, encoding = "utf-8" )
+                #else:
+                df.to_csv(ruta_archivo, index = False, encoding = "utf-8" )
