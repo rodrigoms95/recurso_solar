@@ -16,7 +16,7 @@ if not os.path.exists(carpeta_destino): os.mkdir(carpeta_destino)
 #lon = np.arange(-100.46, -97.259, 0.04)
 # Conjunto de datos 2 km, duck curve 
 #lat = np.arange(14.54, 42.02, 0.02)
-lat = np.arange(15.00, 42.02, 0.02)
+lat = np.arange(19.00, 42.02, 0.02)
 lon = np.arange(-124.41, -86.69, 0.02)
 
 # Años a descargar
@@ -84,11 +84,11 @@ for i in lat:
                 print(ruta_archivo)
                 # URL string
                 url = ( "https://developer.nrel.gov/api/nsrdb/v2/solar/" +
-                    f"{base}.csv?wkt=POINT({j}%20{i})&names={y}&leap_day=" +
-                    f"{leap_year}&interval={interval}&utc={utc}&full_name=" +
-                    f"{name}&email={email}&affiliation={affiliation}" +
-                    f"&mailing_list={mailing_list}&reason={reason}&api_key=" +
-                    f"{api_key}&attributes={attributes}" )
+                    f"{base}.csv?wkt=POINT({j:.2f}%20{i:.2f})&names={y}" +
+                    f"&leap_day={leap_year}&interval={interval}&utc={utc}" +
+                    f"&full_name={name}&email={email}&affiliation=" +
+                    f"{affiliation}&mailing_list={mailing_list}&reason=" +
+                    f"{reason}&api_key={api_key}&attributes={attributes}" )
                 # Descargamos archivo csv del url 
                 try: df = pd.read_csv(url,skiprows=2)
                 # Si no es una coordenada válida no descargamos y seguimos
