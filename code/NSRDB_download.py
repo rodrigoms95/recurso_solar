@@ -15,7 +15,8 @@ if not os.path.exists(carpeta_destino): os.mkdir(carpeta_destino)
 #lat = np.arange(18.09, 20.69, 0.04)
 #lon = np.arange(-100.46, -97.259, 0.04)
 # Conjunto de datos 2 km, duck curve 
-lat = np.arange(14.54, 42.02, 0.02)
+#lat = np.arange(14.54, 42.02, 0.02)
+lat = np.arange(15.00, 42.02, 0.02)
 lon = np.arange(-124.41, -86.69, 0.02)
 
 # Años a descargar
@@ -89,10 +90,13 @@ for i in lat:
                     f"&mailing_list={mailing_list}&reason={reason}&api_key=" +
                     f"{api_key}&attributes={attributes}" )
                 # Descargamos archivo csv del url 
-                #try:
-                df = pd.read_csv(url,skiprows=2)
+                try: df = pd.read_csv(url,skiprows=2)
                 # Si no es una coordenada válida no descargamos y seguimos
-                #except: pass
+                except: 
+                    print("Data non existent")
+                    print(url)
+                    print()
                 # Guardamoa archivo CSV en la subcarpeta
-                #else:
-                df.to_csv(ruta_archivo, index = False, encoding = "utf-8" )
+                else:
+                    df.to_csv(ruta_archivo, index = False, encoding = "utf-8")
+            else: "Data already exists"
