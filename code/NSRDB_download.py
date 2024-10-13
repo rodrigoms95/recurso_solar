@@ -19,8 +19,8 @@ if not os.path.exists(carpeta_destino): os.mkdir(carpeta_destino)
 #lat = np.arange(18.09, 20.69, 0.04)
 #lon = np.arange(-100.46, -97.259, 0.04)
 # Conjunto de datos 2 km, duck curve 
-lat = np.arange(14.54, 42.02, 0.2)
-lon = np.arange(-124.41, -86.69, 0.2)
+lat = np.arange(14.54, 42.02, 0.02)
+lon = np.arange(-124.41, -86.69, 0.02)
 
 # Años a descargar
 # Conjunto de datos 4 km, TMY y quantile map
