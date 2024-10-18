@@ -10,7 +10,7 @@ import shutil
 import time
 
 # Carpeta destino
-carpeta_destino = "../../Datos/NSRDB_2km_duck/"
+carpeta_destino = "/datos/rodr/Datos/NSRDB/NSRDB_2km_duck/"
 # Creamos la subcarpeta
 if not os.path.exists(carpeta_destino): os.mkdir(carpeta_destino)
 
@@ -50,16 +50,19 @@ attributes = ( "air_temperature,dni,ghi,surface_pressure,wind_speed" )
 
 # API key
 api_key = ["vGnsS1lJcyC5dRKax0H9QIs5e6ottm05OB3uzRRL",
-           "XmMWV5ub8RTjyqBGPsjMtmrizT2LaHlhRrxdxylj",
-           "rzX1wbpMOa9fbeBqDfSk3TRcQSf40Ql7ZDk4t50v"]
+          #"XmMWV5ub8RTjyqBGPsjMtmrizT2LaHlhRrxdxylj",
+          #"gyt9NnH5zFXLcbeHV8uvPedVOFi2fWnVmIfvFlNS"
+          ]
 # Email address
 email = ["aporrasunam@gmail.com",
-         "rodrigo.munoz@ingenieria.unam.edu",
-         "rodrigoms95@gmail.com"]
+        #"rodrigo.munoz@ingenieria.unam.edu",
+        #"rodrigo.munos@atmosfera.unam.mx"
+        ]
 # Full name
 name = ["Ariadna+Porras+Cervantes",
-        "Rodrigo+Munoz",
-        "Rodrigo+Sanchez"]
+       #"Rodrigo+Munoz",
+       #"Gustavo+Sanchez"
+       ]
 
 # Leap year
 leap_year = "true"
@@ -110,56 +113,56 @@ for i in lat:
             print(f"{nombre_archivo}: Data non existent")
             shutil.copy("files/lat_lon_2022.csv", ruta_archivo)
           elif e.code == 429:
-            #if k + 1 == len(api_key):
-            raise Exception(f"{nombre_archivo}: Too many "
-              + "requests, try again later")
-            #else:
-            #  k += 1
-            #  print("Changing API key")
-            #  url = ( "https://developer.nrel.gov/api/nsrdb/v2/solar/"
-            #    + f"{base}.csv?wkt=POINT({j:.2f}%20{i:.2f})&names={y}"
-            #    + f"&leap_day={leap_year}&interval={interval}&utc="
-            #    + f"{utc}&full_name={name[k]}&email={email[k]}"
-            #    + f"&affiliation={affiliation}&mailing_list="
-            #    + f"{mailing_list}&reason={reason}&api_key="
-            #    + f"{api_key[k]}&attributes={attributes}" )
-            #  try: df = pd.read_csv(url,skiprows=2)
-            #  except urllib.error.HTTPError as e: 
-            #    if e.code == 400:
-            #      print(f"{nombre_archivo}: Data non existent")
-            #      shutil.copy("files/lat_lon_2022.csv", ruta_archivo)
-            #    elif e.code == 429:
-            #      if k + 1 == len(api_key):
-            #        raise Exception(f"{nombre_archivo}: Too many "
-            #          + "requests, try again later")
-            #      else:
-            #        k += 1
-            #        print("Changing API key")
-            #        url = ( "https://developer.nrel.gov/api/nsrdb/v2/solar/"
-            #          + f"{base}.csv?wkt=POINT({j:.2f}%20{i:.2f})&names={y}"
-            #          + f"&leap_day={leap_year}&interval={interval}&utc="
-            #          + f"{utc}&full_name={name[k]}&email={email[k]}"
-            #          + f"&affiliation={affiliation}&mailing_list="
-            #          + f"{mailing_list}&reason={reason}&api_key="
-            #          + f"{api_key[k]}&attributes={attributes}" )
-            #        try: df = pd.read_csv(url,skiprows=2)
-            #        except urllib.error.HTTPError as e: 
-            #          if e.code == 400:
-            #            print(f"{nombre_archivo}: Data non existent")
-            #            shutil.copy("files/lat_lon_2022.csv", ruta_archivo)
-            #          elif e.code == 429:
-            #            if k + 1 == len(api_key):
-            #              raise Exception(f"{nombre_archivo}: Too many "
-            #                + "requests, try again later")
-            #        # Guardamos archivo CSV en la subcarpeta
-            #        else:
-            #          print(nombre_archivo)
-            #          df.to_csv(ruta_archivo, index = False,
-            #            encoding = "utf-8")
-            #  # Guardamos archivo CSV en la subcarpeta
-            #  else:
-            #    print(nombre_archivo)
-            #    df.to_csv(ruta_archivo, index = False, encoding = "utf-8")
+            if k + 1 == len(api_key):
+              raise Exception(f"{nombre_archivo}: Too many "
+                + "requests, try again later")
+            else:
+              k += 1
+              print("Changing API key")
+              url = ( "https://developer.nrel.gov/api/nsrdb/v2/solar/"
+                + f"{base}.csv?wkt=POINT({j:.2f}%20{i:.2f})&names={y}"
+                + f"&leap_day={leap_year}&interval={interval}&utc="
+                + f"{utc}&full_name={name[k]}&email={email[k]}"
+                + f"&affiliation={affiliation}&mailing_list="
+                + f"{mailing_list}&reason={reason}&api_key="
+                + f"{api_key[k]}&attributes={attributes}" )
+              try: df = pd.read_csv(url,skiprows=2)
+              except urllib.error.HTTPError as e: 
+                if e.code == 400:
+                  print(f"{nombre_archivo}: Data non existent")
+                  shutil.copy("files/lat_lon_2022.csv", ruta_archivo)
+                elif e.code == 429:
+                  if k + 1 == len(api_key):
+                    raise Exception(f"{nombre_archivo}: Too many "
+                      + "requests, try again later")
+                  else:
+                    k += 1
+                    print("Changing API key")
+                    url = ( "https://developer.nrel.gov/api/nsrdb/v2/solar/"
+                      + f"{base}.csv?wkt=POINT({j:.2f}%20{i:.2f})&names={y}"
+                      + f"&leap_day={leap_year}&interval={interval}&utc="
+                      + f"{utc}&full_name={name[k]}&email={email[k]}"
+                      + f"&affiliation={affiliation}&mailing_list="
+                      + f"{mailing_list}&reason={reason}&api_key="
+                      + f"{api_key[k]}&attributes={attributes}" )
+                    try: df = pd.read_csv(url,skiprows=2)
+                    except urllib.error.HTTPError as e: 
+                      if e.code == 400:
+                        print(f"{nombre_archivo}: Data non existent")
+                        shutil.copy("files/lat_lon_2022.csv", ruta_archivo)
+                      elif e.code == 429:
+                        if k + 1 == len(api_key):
+                          raise Exception(f"{nombre_archivo}: Too many "
+                            + "requests, try again later")
+                    # Guardamos archivo CSV en la subcarpeta
+                    else:
+                      print(nombre_archivo)
+                      df.to_csv(ruta_archivo, index = False,
+                        encoding = "utf-8")
+              # Guardamos archivo CSV en la subcarpeta
+              else:
+                print(nombre_archivo)
+                df.to_csv(ruta_archivo, index = False, encoding = "utf-8")
         # Guardamos archivo CSV en la subcarpeta
         else:
           print(nombre_archivo)
