@@ -19,8 +19,8 @@ if not os.path.exists(carpeta_destino): os.mkdir(carpeta_destino)
 #lat = np.arange(18.09, 20.69, 0.04)
 #lon = np.arange(-100.46, -97.259, 0.04)
 # Conjunto de datos 2 km, duck curve 
-lat = np.arange(14.54, 42.02, 0.02)
-lon = np.arange(-124.41, -86.69, 0.02)
+lat = np.arange(14.54, 42.02, 0.02)[::-1]
+lon = np.arange(-124.41, -86.69, 0.02)[::-1]
 
 # Años a descargar
 # Conjunto de datos 4 km, TMY y quantile map
@@ -50,18 +50,18 @@ attributes = ( "air_temperature,dni,ghi,surface_pressure,wind_speed" )
 
 # API key
 api_key = ["vGnsS1lJcyC5dRKax0H9QIs5e6ottm05OB3uzRRL",
-          #"XmMWV5ub8RTjyqBGPsjMtmrizT2LaHlhRrxdxylj",
-          #"gyt9NnH5zFXLcbeHV8uvPedVOFi2fWnVmIfvFlNS"
+          "gegspc3WvP8pty2KCkMcudYbMeubTGpEloXMHYbr",
+          "1igXLghzG86zb4m2oSTYHjkby5Un7VmSD1PdYhO5"
           ]
 # Email address
 email = ["aporrasunam@gmail.com",
-        #"rodrigo.munoz@ingenieria.unam.edu",
-        #"rodrigo.munos@atmosfera.unam.mx"
+        "gmsanche63@gmail.com",
+        "gmsanche63@hotmail.com"
         ]
 # Full name
 name = ["Ariadna+Porras+Cervantes",
-       #"Rodrigo+Munoz",
-       #"Gustavo+Sanchez"
+       "Gustavo+Munoz",
+       "Gustavo+Sanchez"
        ]
 
 # Leap year
