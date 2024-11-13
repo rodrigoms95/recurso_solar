@@ -24,7 +24,7 @@ points = points[np.where(np.round(points["latitude"]%.06*100)==2, True, False)
 print("Cargando datos")
 # Regiones eléctricas
 dir_d = "/home/rodr/Datos/recurso_solar/"
-dir_r = "/home/rodr/temp/recurso_solar/duck_curve/"
+dir_r = "/datos/rodr/temp/recurso_solar/duck_curve/"
 regiones_p = f"{dir_d}Mapas/Electric_regions"
 regiones = gpd.read_file(regiones_p)
 # Líneas de transmisión
@@ -45,6 +45,7 @@ for row in regiones.itertuples():
     points["MASK_REG"] = points.within(row.geometry)
     points["REGION"] = points["REGION"].where(
         ~points["MASK_REG"], row.ID_NUMBER )
+points = points.dropna()
 
 # Vemos si el punto cae cerca de una línea de transmisión
 print("Determinando proximidad a líneas de transmisión")
