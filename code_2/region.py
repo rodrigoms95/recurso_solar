@@ -8,7 +8,7 @@ points = pd.read_csv(f"{dir_r}conus_points.csv").rename( columns =
     {"Unnamed: 0": "points"}).set_index("points")[["latitude", "longitude",
     "timezone", "REGION", "potential_solar_park_zones", "built_surface"]
     ].to_xarray()
-ds_0 = xr.open_dataset(f"{dir_r}full_disc_PV_2022.nc").chunk({"time": 3000})
+ds_0 = xr.open_dataset(f"{dir_r}full_disc_PV_2022.nc").chunk({"time": 2000})
 ds = xr.merge([ds_0, points])
 
 # Casos a estudiar
@@ -63,15 +63,17 @@ ds_c_4 = ds_i.groupby("REGION").mean()
 ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4], "REGION")
 ds_c["REGION"] = ds_c["REGION"].astype(int)
 
+with ProgressBar(): ds_c = ds_c.compute()
+
 # Para generación distribuida ponderamos con el área construida
 a = ds[["built_surface", "REGION"]].groupby("REGION").sum().to_dataframe()
-a.loc[22] = a[a.index.isin([1, 2, 4, 5, 6, 14, 19])].sum()
-a.loc[23] = a[a.index.isin([1, 2, 10, 11, 12, 13])].sum()
+a.loc[22] = a.loc[[1, 2, 4, 5, 6, 14, 19]].sum()
+a.loc[23] = a.loc[[1, 2, 10, 11, 12, 13]].sum()
 a.loc[24] = a.sum()
 b = ds[["built_surface", "REGION"]].groupby("REGION").count().to_dataframe()
-b.loc[22] = a[a.index.isin([1, 2, 4, 5, 6, 14, 19])].sum()
-b.loc[23] = a[a.index.isin([1, 2, 10, 11, 12, 13])].sum()
-b.loc[24] = a.sum()
+b.loc[22] = b.loc[[1, 2, 4, 5, 6, 14, 19]].sum()
+b.loc[23] = b.loc[[1, 2, 10, 11, 12, 13]].sum()
+b.loc[24] = b.sum()
 ds_c["sum_built_surface"] = a.to_xarray()["built_surface"]
 ds_c["count_built_surface"] = b.to_xarray()["built_surface"]
 ds_c[prod_n_dist] = (ds_c[prod_n_dist] * ds_c["count_built_surface"]
@@ -82,6 +84,4 @@ prod_n_total = [f"{x}_total" for x in prod_n]
 for i, v in enumerate(prod_n_total): ds_c[v] = (
     (ds_c[prod_n_dist[i]] + ds_c[prod_n_centr[i]])/2).astype(np.float32)
 
-delayed_obj = ds_c.to_netcdf(f"{dir_r}full_disc_region_2022.nc",
-    compute = False)
-with ProgressBar(): results = delayed_obj.compute()
+ds_c.to_netcdf(f"{dir_r}full_disc_region_2022.nc", compute = True)
