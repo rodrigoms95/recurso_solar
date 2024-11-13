@@ -8,7 +8,7 @@ points = pd.read_csv(f"{dir_r}conus_points.csv").rename( columns =
     {"Unnamed: 0": "points"}).set_index("points")[["latitude", "longitude",
     "timezone", "REGION", "potential_solar_park_zones", "built_surface"]
     ].to_xarray()
-ds_0 = xr.open_dataset(f"{dir_r}full_disc_PV_2022.nc").chunk({"time": 1000})
+ds_0 = xr.open_dataset(f"{dir_r}full_disc_PV_2022.nc").chunk({"time": 3000})
 ds = xr.merge([ds_0, points])
 
 # Casos a estudiar
@@ -65,19 +65,17 @@ ds_c["REGION"] = ds_c["REGION"].astype(int)
 
 # Para generación distribuida ponderamos con el área construida
 a = ds[["built_surface", "REGION"]].groupby("REGION").sum().to_dataframe()
-a.loc[22] = a[a["REGION"].isin([1, 2, 4, 5, 6, 14, 19])].sum()
-a.loc[23] = a[a["REGION"].isin([1, 2, 10, 11, 12, 13])].sum()
+a.loc[22] = a[a.index.isin([1, 2, 4, 5, 6, 14, 19])].sum()
+a.loc[23] = a[a.index.isin([1, 2, 10, 11, 12, 13])].sum()
 a.loc[24] = a.sum()
 b = ds[["built_surface", "REGION"]].groupby("REGION").count().to_dataframe()
-b.loc[22] = a[a["REGION"].isin([1, 2, 4, 5, 6, 14, 19])].sum()
-b.loc[23] = a[a["REGION"].isin([1, 2, 10, 11, 12, 13])].sum()
+b.loc[22] = a[a.index.isin([1, 2, 4, 5, 6, 14, 19])].sum()
+b.loc[23] = a[a.index.isin([1, 2, 10, 11, 12, 13])].sum()
 b.loc[24] = a.sum()
-ds["sum_built_surface"] = ds["REGION"].to_dataframe().join(
-    a, on = "REGION")["built_surface"].to_xarray().astype(np.float32)
-ds["count_built_surface"] = ds["REGION"].to_dataframe().join(
-    b, on = "REGION")["built_surface"].to_xarray().astype(np.float32)
-ds[prod_n_dist] = (ds[prod_n_dist] * ds["count_built_surface"]
-    / ds["sum_built_surface"])
+ds_c["sum_built_surface"] = a.to_xarray()["built_surface"]
+ds_c["count_built_surface"] = b.to_xarray()["built_surface"]
+ds_c[prod_n_dist] = (ds_c[prod_n_dist] * ds_c["count_built_surface"]
+    / ds_c["sum_built_surface"])
 
 # Unimos toda la producción
 prod_n_total = [f"{x}_total" for x in prod_n]
