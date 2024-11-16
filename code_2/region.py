@@ -55,10 +55,6 @@ b = ds[["built_surface", "REGION"]].groupby("REGION").count().to_dataframe()
 b.loc[24] = b.sum()
 b.loc[22] = b.loc[[1, 2, 4, 5, 6, 14, 19]].sum()
 b.loc[23] = b.loc[[1, 2, 10, 11, 12, 13]].sum()
-ds_c["sum_built_surface"] = a.sort_index().to_xarray()["built_surface"]
-ds_c["count_built_surface"] = b.sort_index().to_xarray()["built_surface"]
-ds_c[prod_n_dist] = (ds_c[prod_n_dist] * ds_c["count_built_surface"]
-    / ds_c["sum_built_surface"])
 
 # Promediamos la generación por región
 ds_c = ds.groupby("REGION").mean()
@@ -76,6 +72,11 @@ ds["REGION"] = ds["REGION"].where(ds_i["REGION"] == 24, 24)
 ds_c_4 = ds.groupby("REGION").mean()
 ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4], "REGION")
 ds_c["REGION"] = ds_c["REGION"].astype(int)
+
+ds_c["sum_built_surface"] = a.sort_index().to_xarray()["built_surface"]
+ds_c["count_built_surface"] = b.sort_index().to_xarray()["built_surface"]
+ds_c[prod_n_dist] = (ds_c[prod_n_dist] * ds_c["count_built_surface"]
+    / ds_c["sum_built_surface"])
 
 # Unimos toda la producción
 prod_n_total = [f"{x}_total" for x in prod_n]
