@@ -46,23 +46,6 @@ prod_n_centr = [f"{x}_central" for x in prod_n]
 ds[prod_n_centr] = ds[prod_n].where(ds["potential_solar_park_zones"]
     ).astype(np.float32)
 
-# Promediamos la generación por región
-ds_c = ds.groupby("REGION").mean()
-# Datos agregados para generación
-# Agrupamiento longitudinal
-ds_i = ds.where(ds["REGION"].isin([1, 2, 4, 5, 6, 14, 19]))
-ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 22, 22)
-ds_c_2 = ds_i.groupby("REGION").mean()
-# Agrupamiento latitudinal
-ds_i = ds.where(ds["REGION"].isin([1, 2, 10, 11, 12, 13]))
-ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 23, 23)
-ds_c_3 = ds_i.groupby("REGION").mean()
-# Agrupamiento total
-ds_c_4 = ds.mean()
-ds_c_4["REGION"] = 24
-ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4], "REGION")
-ds_c["REGION"] = ds_c["REGION"].astype(int)
-
 # Para generación distribuida ponderamos con el área construida
 a = ds[["built_surface", "REGION"]].groupby("REGION").sum().to_dataframe()
 a.loc[24] = a.sum()
@@ -76,6 +59,23 @@ ds_c["sum_built_surface"] = a.sort_index().to_xarray()["built_surface"]
 ds_c["count_built_surface"] = b.sort_index().to_xarray()["built_surface"]
 ds_c[prod_n_dist] = (ds_c[prod_n_dist] * ds_c["count_built_surface"]
     / ds_c["sum_built_surface"])
+
+# Promediamos la generación por región
+ds_c = ds.groupby("REGION").mean()
+# Datos agregados para generación
+# Agrupamiento longitudinal
+ds_i = ds.where(ds["REGION"].isin([1, 2, 4, 5, 6, 14, 19]))
+ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 22, 22)
+ds_c_2 = ds_i.groupby("REGION").mean()
+# Agrupamiento latitudinal
+ds_i = ds.where(ds["REGION"].isin([1, 2, 10, 11, 12, 13]))
+ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 23, 23)
+ds_c_3 = ds_i.groupby("REGION").mean()
+# Agrupamiento total
+ds["REGION"] = ds["REGION"].where(ds_i["REGION"] == 24, 24)
+ds_c_4 = ds.groupby("REGION").mean()
+ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4], "REGION")
+ds_c["REGION"] = ds_c["REGION"].astype(int)
 
 # Unimos toda la producción
 prod_n_total = [f"{x}_total" for x in prod_n]
