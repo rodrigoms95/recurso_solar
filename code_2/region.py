@@ -58,10 +58,10 @@ ds_i = ds.where(ds["REGION"].isin([1, 2, 10, 11, 12, 13]))
 ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 23, 23)
 ds_c_3 = ds_i.groupby("REGION").mean()
 # Agrupamiento total
-ds["REGION"] = ds["REGION"].where(ds["REGION"] == 24, 24)
-ds_c_4 = ds.groupby("REGION").mean()
-ds_c["REGION"] = ds_c["REGION"].astype(int)
+ds_c_4 = ds.mean()
+ds_c_4["REGION"] = 24
 ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4], "REGION")
+ds_c["REGION"] = ds_c["REGION"].astype(int)
 
 # Para generación distribuida ponderamos con el área construida
 a = ds[["built_surface", "REGION"]].groupby("REGION").sum().to_dataframe()
