@@ -74,7 +74,7 @@ ds[track_tilt[9]   ] = 90 + lat
 ds[track_azimuth[9]] = 0
 ds = ds.drop_vars(["latitude", "longitude"])
 
-# Ángulo de incidencia y valores de método de Pérez
+# Ángulo de incidencia
 for i in range(len(cases)):
     # Ángulo entre el panel y el sol, Angle of Incidence
     ds[track_AOI[i]] = acos((ds["cos_zenith"]*cos(ds[track_tilt[i]])

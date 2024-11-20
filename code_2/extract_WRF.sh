@@ -1,0 +1,1 @@
+scn="2040_2060"; dr=/home/rodr/buffalo/rodr/WRF/$scn; mkdir -p $dr; for i in "" "01" "02" "03"; do dd=/home/rodr/buffalo/SalidasWRF/$scn/zMegalo$i/Dominio02/variables_2Dimension; cd $dd; for j in zSalidaIRainWRF_*.nc; do echo $j; cp $j $dr/$j; done; done; cd $dr

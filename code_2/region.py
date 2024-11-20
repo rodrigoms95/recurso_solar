@@ -48,13 +48,15 @@ ds[prod_n_centr] = ds[prod_n].where(ds["potential_solar_park_zones"]
 
 # Para generación distribuida ponderamos con el área construida
 a = ds[["built_surface", "REGION"]].groupby("REGION").sum().to_dataframe()
-a.loc[24] = a.sum()
+a.loc[25] = a.sum()
 a.loc[22] = a.loc[[1, 2, 4, 5, 6, 14, 19]].sum()
 a.loc[23] = a.loc[[1, 2, 10, 11, 12, 13]].sum()
+a.loc[24] = a.loc[[3, 4, 14, 15, 16, 17, 18, 19, 20, 21]].sum()
 b = ds[["built_surface", "REGION"]].groupby("REGION").count().to_dataframe()
-b.loc[24] = b.sum()
+b.loc[25] = b.sum()
 b.loc[22] = b.loc[[1, 2, 4, 5, 6, 14, 19]].sum()
 b.loc[23] = b.loc[[1, 2, 10, 11, 12, 13]].sum()
+b.loc[24] = b.loc[[3, 4, 14, 15, 16, 17, 18, 19, 20, 21]].sum()
 
 # Promediamos la generación por región
 ds_c = ds.groupby("REGION").mean()
@@ -63,15 +65,19 @@ ds_c = ds.groupby("REGION").mean()
 ds_i = ds.where(ds["REGION"].isin([1, 2, 4, 5, 6, 14, 19]))
 ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 22, 22)
 ds_c_2 = ds_i.groupby("REGION").mean()
-# Agrupamiento latitudinal
+# Agrupamiento latitudinal 1
 ds_i = ds.where(ds["REGION"].isin([1, 2, 10, 11, 12, 13]))
 ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 23, 23)
 ds_c_3 = ds_i.groupby("REGION").mean()
+# Agrupamiento latitudinal 2
+ds_i = ds.where(ds["REGION"].isin([3, 4, 14, 15, 16, 17, 18, 19, 20, 21]))
+ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 24, 24)
+ds_c_4= ds_i.groupby("REGION").mean()
 # Agrupamiento total
 ds_i = ds.where(ds["REGION"].isin(list(range(1, 22))))
-ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 24, 24)
-ds_c_4 = ds_i.groupby("REGION").mean()
-ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4], "REGION")
+ds_i["REGION"] = ds_i["REGION"].where(ds_i["REGION"] == 25, 25)
+ds_c_5 = ds_i.groupby("REGION").mean()
+ds_c = xr.concat([ds_c, ds_c_2, ds_c_3, ds_c_4, ds_c_5], "REGION")
 ds_c["REGION"] = ds_c["REGION"].astype(int)
 
 ds_c["sum_built_surface"] = a.sort_index().to_xarray()["built_surface"]

@@ -77,10 +77,8 @@ ds["Delta"] = (ds["dhi"] * ds["Air_Mass"] / Ea).astype(np.float32)
 ds = ds.drop_vars("Air_Mass")
 for j in Perez.columns:
     ds[j] = 0.0
-    for i in Perez.index:
-        ds[j] = ds[j].where(ds["epsilon"] != i,
+    for i in Perez.index: ds[j] = ds[j].where(ds["epsilon"] != i,
         Perez.loc[i, j]).astype(np.float32)
-    ds[j]
 ds = ds.drop_vars("epsilon")
 ds["F1"] = ( ds["f11"] + ds["f12"]*ds["Delta"]
     + np.radians(ds["Zenith_Angle"])*ds["f13"]
