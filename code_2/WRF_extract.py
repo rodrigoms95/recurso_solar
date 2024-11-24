@@ -1,24 +1,34 @@
 # Extrae variables de WRF
 
 import os
+import sys
 import numpy as np
 import xarray as xr
 
 # Cargamos datos.
-dir_d = "/home/rodr/buffalo/rodr/WRF/2040_2060/"
-dir_r = "/home/rodr/buffalo/rodr/WRF/2040_2060_data/"
+scn   = sys.argv[1]
+dir_o = "/home/rodr/buffalo/rodr/WRF/"
+dir_d = f"{dir_o}{scn}/{scn}/"
+dir_r = f"{dir_o}{scn}/data/"
+if not os.path.exists(dir_r): os.mkdir(dir_r)
 files = os.listdir(dir_d)
 files.sort
+
+print("Extrayendo variables")
 for f in files:
-    print(f)
-    ds = xr.open_dataset(dir_d + f)[["T2", "U10", "V10", "SWDOWN"]]
-    # Temperatura
-    ds["Temperature"] = (ds["T2"] - 273.15).astype(np.float32)
-    # Velocidad del viento
-    ds["Wind_speed"] = np.sqrt(ds["U10"]**2 + ds["V10"]**2).astype(np.float32)
-    # Radiación solar
-    ds = ds.rename_vars({"SWDOWN": "GHI"})
-    ds["GHI"] = ds["GHI"].astype(np.float32)
-    # Guardamos el nuevo archivo
-    ds = ds.drop_vars(["T2", "U10", "V10"])
-    ds.to_netcdf(dir_r + f[16:])
+    print(f"{f}               ", end = "\r")
+    if not os.path.exists(dir_r + f[16:]):
+        ds = xr.open_dataset(dir_d + f)[["T2", "U10", "V10", "SWDOWN"]]
+        # Temperatura
+        ds["Temperature"] = (ds["T2"] - 273.15).astype(np.float32)
+        # Velocidad del viento
+        ds["Wind_speed"] = np.sqrt(ds["U10"]**2
+            + ds["V10"]**2).astype(np.float32)
+        # Radiación solar
+        ds = ds.rename_vars({"SWDOWN": "GHI"})
+        ds["GHI"] = ds["GHI"].astype(np.float32)
+        # Guardamos el nuevo archivo
+        ds = ds.drop_vars(["T2", "U10", "V10"])
+        ds.to_netcdf(dir_r + f[16:])
+print()
+print()
