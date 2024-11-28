@@ -7,7 +7,8 @@ import xarray as xr
 
 # Cargamos datos.
 scn   = sys.argv[1]
-dir_o = "/home/rodr/buffalo/rodr/WRF/"
+#dir_o = "/home/rodr/buffalo/rodr/WRF/"
+dir_o = "/datos/rodr/Datos/WRF_data/"
 dir_d = f"{dir_o}{scn}/{scn}/"
 dir_r = f"{dir_o}{scn}/data/"
 if not os.path.exists(dir_r): os.mkdir(dir_r)

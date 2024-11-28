@@ -7,7 +7,8 @@ import pandas         as pd
 
 # Cargamos datos.
 scn   = sys.argv[1]
-dir_o = "/home/rodr/buffalo/rodr/WRF/"
+#dir_o = "/home/rodr/buffalo/rodr/WRF/"
+dir_o = "/datos/rodr/Datos/WRF_data/"
 dir_d = f"{dir_o}{scn}/PV/"
 dir_r = f"{dir_o}{scn}/max/"
 if not os.path.exists(dir_r): os.mkdir(dir_r)
