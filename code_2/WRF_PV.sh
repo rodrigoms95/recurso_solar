@@ -6,8 +6,8 @@ printf "\nCalculando escenarios de generación fotovoltaica\n\n"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Escenario a calcular
-for scn in "1985_2014"; do
-#for scn in "1985_2014" "2040_2060" "2080_2089" "2040_2060_100PorcUrbano" "2080_2089_100PorcUrbano"; do
+for scn in "NSRDB"; do
+#for scn in "NSRDB" "1995_2014" "2040_2060" "2080_2089" "2040_2060_100PorcUrbano" "2080_2089_100PorcUrbano"; do
 #    dr=/home/rodr/buffalo/rodr/WRF/$scn/$scn
 #    printf "\nCalculando generación fotovoltaica para $scn\n"
 #    # Copiamos los archivos
@@ -25,19 +25,13 @@ for scn in "1985_2014"; do
 #    printf "\n\n"
 
     # Sacamos las variables de interés
-    python $SCRIPT_DIR/WRF_extract.py $scn
+    #python $SCRIPT_DIR/WRF_extract.py $scn
     # Calculamos la generación fotovoltaica
     python $SCRIPT_DIR/WRF_PV.py $scn
     # Obtenemos los máximos
     python $SCRIPT_DIR/get_max.py $scn
     # Unimos el tiempo
     python $SCRIPT_DIR/merge_time.py $scn
-    # Calculamos cuantiles
-    # python $SCRIPT_DIR/cdf_wrf.py $scn "_PV"
-    # python $SCRIPT_DIR/cdf_wrf.py $scn ""
-    # Mapeo de cuantiles
-    # python $SCRIPT_DIR/quantile_calc.py $scn "_PV"
-    # python $SCRIPT_DIR/quantile_calc.py $scn ""
     #rm -rf $dr
 
 done

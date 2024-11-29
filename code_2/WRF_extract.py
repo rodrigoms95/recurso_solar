@@ -18,7 +18,7 @@ files.sort
 print("Extrayendo variables")
 for f in files:
     print(f"{f}               ", end = "\r")
-    if not os.path.exists(dir_r + f[16:]):
+    if not os.path.exists(dir_r + "_".join(f.split("_")[1:])):
         ds = xr.open_dataset(dir_d + f)[["T2", "U10", "V10", "SWDOWN"]]
         # Temperatura
         ds["Temperature"] = (ds["T2"] - 273.15).astype(np.float32)

@@ -15,55 +15,65 @@ dir_d3 = f"{dir_o}{scn}/max/"
 dir_r  = f"/datos/rodr/Datos/WRF/{scn}/"
 if not os.path.exists(dir_r): os.mkdir(dir_r)
 
+if scn=="NSRDB":
+    coords = ("time", "lat", "lon")
+    dims = ("time", "lat", "lon")
+else:
+    coords = ("XTIME", "XLAT", "XLONG")
+    dims = ("XTIME", "south_north", "west_east")
+
 # Cargamos archivos y unimos
 ds_1       = None
 ds_2       = None
 ds_3       = None
 print("Uniendo Datos temporales")
 if not os.path.exists(f"{dir_r}{scn}.nc"):
-    ds_1 = xr.open_mfdataset(f"{dir_d1}*.nc").sortby("XTIME")
-    ds_1_mean = ds_1.drop_vars("GHI").mean("XTIME")
+    ds_1 = xr.open_mfdataset(f"{dir_d1}*.nc").sortby(coords[0])
+    ds_1_mean = ds_1.drop_vars("GHI").mean(coords[0])
     ds_1_mean["GHI"] = ds_1["GHI"].resample(
-        {"XTIME": "YE"}).sum().mean("XTIME")
-    ds_1_month = ds_1.drop_vars("GHI").groupby(ds_1["XTIME"].dt.month).mean()
-    ds_1_month_h = ds_1["GHI"].resample({"XTIME": "ME"}).sum()
+        {coords[0]: "YE"}).sum().mean(coords[0])
+    ds_1_month = ds_1.drop_vars("GHI").groupby(ds_1[coords[0]].dt.month).mean()
+    ds_1_month_h = ds_1["GHI"].resample({coords[0]: "ME"}).sum()
     ds_1_month["GHI"] = ds_1_month_h.groupby(
-        ds_1_month_h["XTIME"].dt.month).mean()
-    ds_1_day = ds_1.drop_vars("GHI").groupby(ds_1["XTIME"].dt.dayofyear).mean()
-    ds_1_day_h = ds_1["GHI"].resample({"XTIME": "D"}).sum()
+        ds_1_month_h[coords[0]].dt.month).mean()
+    ds_1_day = ds_1.drop_vars("GHI").groupby(
+        ds_1[coords[0]].dt.dayofyear).mean()
+    ds_1_day_h = ds_1["GHI"].resample({coords[0]: "D"}).sum()
     ds_1_day["GHI"] = ds_1_day_h.groupby(
-        ds_1_day_h["XTIME"].dt.dayofyear).mean()
-    ds_1_hour = ds_1.drop_vars("GHI").groupby(ds_1["XTIME"].dt.hour).mean()
-    ds_1_hour["GHI"] = ds_1["GHI"].groupby(ds_1["XTIME"].dt.hour).mean()
+        ds_1_day_h[coords[0]].dt.dayofyear).mean()
+    ds_1_hour = ds_1.drop_vars("GHI").groupby(ds_1[coords[0]].dt.hour).mean()
+    ds_1_hour["GHI"] = ds_1["GHI"].groupby(ds_1[coords[0]].dt.hour).mean()
     month_hour_idx = pd.MultiIndex.from_arrays(
-        [ds_1["XTIME"].dt.month.values, ds_1["XTIME"].dt.hour.values])
+        [ds_1[coords[0]].dt.month.values, ds_1[coords[0]].dt.hour.values])
     ds_1_h = ds_1.copy()
-    ds_1_h.coords["month_hour"] = ("XTIME", month_hour_idx)
+    ds_1_h.coords["month_hour"] = (coords[0], month_hour_idx)
     ds_1_hour_month = ds_1_h.drop_vars("GHI").groupby("month_hour").mean()
     ds_1_hour_month["GHI"] = ds_1_h[["GHI"]].groupby(
         "month_hour").mean()["GHI"]
     ds_1_hour_month = ds_1_hour_month.unstack("month_hour").rename(
         {"XTIME_level_0": "month", "XTIME_level_1": "hour"})
 if not os.path.exists(f"{dir_r}{scn}_PV.nc"):
-    ds_2 =  xr.open_mfdataset(f"{dir_d2}*.nc").sortby("XTIME")
-    ds_2_mean    = ds_2.resample({"XTIME": "YE"}).sum().mean("XTIME")
-    ds_2_month_h = ds_2.resample({"XTIME": "ME"}).sum()
-    ds_2_month   = ds_2_month_h.groupby(ds_2_month_h["XTIME"].dt.month).mean()
-    ds_2_day_h   = ds_2.resample({"XTIME": "D"}).sum()
-    ds_2_day     = ds_2_day_h.groupby(ds_2_day_h["XTIME"].dt.dayofyear).mean()
-    ds_2_hour    = ds_2.groupby(ds_2["XTIME"].dt.hour).mean()
+    ds_2 =  xr.open_mfdataset(f"{dir_d2}*.nc").sortby(coords[0])
+    ds_2_mean    = ds_2.resample({coords[0]: "YE"}).sum().mean(coords[0])
+    ds_2_month_h = ds_2.resample({coords[0]: "ME"}).sum()
+    ds_2_month   = ds_2_month_h.groupby(
+        ds_2_month_h[coords[0]].dt.month).mean()
+    ds_2_day_h   = ds_2.resample({coords[0]: "D"}).sum()
+    ds_2_day     = ds_2_day_h.groupby(
+        ds_2_day_h[coords[0]].dt.dayofyear).mean()
+    ds_2_hour    = ds_2.groupby(ds_2[coords[0]].dt.hour).mean()
     month_hour_idx = pd.MultiIndex.from_arrays(
-        [ds_2["XTIME"].dt.month.values, ds_2["XTIME"].dt.hour.values])
+        [ds_2[coords[0]].dt.month.values, ds_2[coords[0]].dt.hour.values])
     ds_2_h = ds_2.copy()
-    ds_2_h.coords["month_hour"] = ("XTIME", month_hour_idx)
+    ds_2_h.coords["month_hour"] = (coords[0], month_hour_idx)
     ds_2_hour_month  = ds_2_h.groupby("month_hour").mean()
     ds_2_hour_month = ds_2_hour_month.unstack("month_hour").rename(
         {"XTIME_level_0": "month", "XTIME_level_1": "hour"})
 if not os.path.exists(f"{dir_r}{scn}_max.nc"):
-    ds_3 = xr.open_mfdataset(f"{dir_d3}*.nc").sortby("XTIME")
-    ds_3_mean  = ds_3.mean("XTIME")
-    ds_3_month = ds_3.groupby(ds_3["XTIME"].dt.month).mean()
-    ds_3_day   = ds_3.groupby(ds_3["XTIME"].dt.dayofyear).mean()
+    ds_3 = xr.open_mfdataset(f"{dir_d3}*.nc").sortby(coords[0])
+    ds_3_mean  = ds_3.mean(coords[0])
+    ds_3_month = ds_3.groupby(ds_3[coords[0]].dt.month).mean()
+    ds_3_day   = ds_3.groupby(ds_3[coords[0]].dt.dayofyear).mean()
 
 # Calculamos y guardamos
 with ProgressBar():

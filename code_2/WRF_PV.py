@@ -25,19 +25,27 @@ if not os.path.exists(dir_r): os.mkdir(dir_r)
 files = os.listdir(dir_d)
 files.sort
 
+if scn=="NSRDB":
+    coords = ("time", "lat", "lon")
+    dims = ("time", "lat", "lon")
+else:
+    coords = ("XTIME", "XLAT", "XLONG")
+    dims = ("XTIME", "south_north", "west_east")
+
 print("Calculando generación fotovoltaica")
 for f in files:
     print(f"{f}               ", end = "\r")
     if not os.path.exists(dir_r + f):
         ds = xr.open_dataset(dir_d + f)
 
-        lat = ds["XLAT"]
-        lon = ds["XLONG"]
+        time = ds[coords[0]]
+        lat = ds[coords[1]]
+        lon = ds[coords[2]]
         # Orientación del panel
         array_tilt = lat
         array_azimuth = 180
         # Eccentric anomaly of the earth in its orbit around the sun.
-        ds["Day_Angle"] = (6.283185 * (ds["XTIME"].dt.dayofyear-1)/365
+        ds["Day_Angle"] = (6.283185 * (time.dt.dayofyear-1)/365
             ).astype(np.float32)
         # Declinación.
         ds["Declination"] = ((0.006918 - 0.399912 * np.cos(ds["Day_Angle"])
@@ -53,13 +61,13 @@ for f in files:
             - 0.014615*np.cos(2*ds["Day_Angle"])
             - 0.040849*np.sin(2*ds["Day_Angle"])) * 229.18).astype(np.float32)
         # Longitud del punto subsolar.
-        ds["lon_subs"] = -15 * (ds["XTIME"].dt.hour + ds["Time_Equation"]/60
+        ds["lon_subs"] = -15 * (time.dt.hour + ds["Time_Equation"]/60
             ).astype(np.float32)
         # Posiciones del analema solar.
         # cos zenith = Sz
         ds["cos_zenith"] = (sin(lat)*sin(ds["Declination"])
             - cos(lat)*cos(ds["Declination"]) * cos(ds["lon_subs"]-lon)
-            ).transpose("XTIME", "south_north", "west_east").astype(np.float32)
+            ).transpose(*dims).astype(np.float32)
         ds = ds.drop_vars(["lon_subs"])
         # Ángulo del cénit solar.
         ds["Zenith_Angle"] = acos(ds["cos_zenith"]).astype(np.float32)
@@ -68,7 +76,7 @@ for f in files:
             0.01, 0).astype(np.float32)
         ds["sin_zenith"] = sin(ds["Zenith_Angle"])
         # Ángulo horario.
-        ds["Hour_Angle"] = (15 * (ds["XTIME"].dt.hour
+        ds["Hour_Angle"] = (15 * (time.dt.hour
             - 12 - ds["Time_Equation"]/60 + lon/15)).astype(np.float32)
         ds["Hour_Angle"] = xr.where(ds["Hour_Angle"]<-180,
             360+ds["Hour_Angle"], ds["Hour_Angle"])
@@ -167,7 +175,8 @@ for f in files:
             & (ds["bins"]<1.500), 2, ds["epsilon"] ).astype(np.float32)
         ds["epsilon"] = xr.where( (ds["bins"]<1.065),
             1, ds["epsilon"] ).astype(np.float32)
-        Perez = pd.read_csv(f"{os.path.dirname(__file__)}/../files/Perez.csv", index_col = "bin")
+        Perez = pd.read_csv(f"{os.path.dirname(__file__)}/../files/Perez.csv",
+            index_col = "bin")
         ds = ds.drop_vars("bins")
         # Extraterrestrial radiation.
         Ea = 1367
