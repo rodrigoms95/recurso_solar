@@ -51,7 +51,7 @@ if not os.path.exists(f"{dir_r}{scn}.nc"):
     ds_1_hour_month["GHI"] = ds_1_h[["GHI"]].groupby(
         "month_hour").mean()["GHI"]
     ds_1_hour_month = ds_1_hour_month.unstack("month_hour").rename(
-        {"XTIME_level_0": "month", "XTIME_level_1": "hour"})
+        {f"{dims[0]}_level_0": "month", f"{dims[0]}_level_1": "hour"})
 if not os.path.exists(f"{dir_r}{scn}_PV.nc"):
     ds_2 =  xr.open_mfdataset(f"{dir_d2}*.nc").sortby(coords[0])
     ds_2_mean    = ds_2.resample({coords[0]: "YE"}).sum().mean(coords[0])
@@ -68,7 +68,7 @@ if not os.path.exists(f"{dir_r}{scn}_PV.nc"):
     ds_2_h.coords["month_hour"] = (coords[0], month_hour_idx)
     ds_2_hour_month  = ds_2_h.groupby("month_hour").mean()
     ds_2_hour_month = ds_2_hour_month.unstack("month_hour").rename(
-        {"XTIME_level_0": "month", "XTIME_level_1": "hour"})
+        {f"{dims[0]}_level_0": "month", f"{dims[0]}_level_1": "hour"})
 if not os.path.exists(f"{dir_r}{scn}_max.nc"):
     ds_3 = xr.open_mfdataset(f"{dir_d3}*.nc").sortby(coords[0])
     ds_3_mean  = ds_3.mean(coords[0])

@@ -16,11 +16,12 @@ files = os.listdir(dir_d)
 files.sort()
 
 if scn=="NSRDB":
-    coords = ("time", "lat", "lon")
-    dims = ("time", "lat", "lon")
+    coords = ["time", "lat", "lon"]
+    dims = ["time", "lat", "lon"]
+
 else:
-    coords = ("XTIME", "XLAT", "XLONG")
-    dims = ("XTIME", "south_north", "west_east")
+    coords = ["XTIME", "XLAT", "XLONG"]
+    dims = ["XTIME", "south_north", "west_east"]
 
 print("Calculando máximos")
 for f in files:

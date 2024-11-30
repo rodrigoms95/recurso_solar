@@ -25,7 +25,7 @@ for scn in "NSRDB"; do
 #    printf "\n\n"
 
     # Sacamos las variables de interés
-    #python $SCRIPT_DIR/WRF_extract.py $scn
+    python $SCRIPT_DIR/WRF_extract.py $scn
     # Calculamos la generación fotovoltaica
     python $SCRIPT_DIR/WRF_PV.py $scn
     # Obtenemos los máximos
