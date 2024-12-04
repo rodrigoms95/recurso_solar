@@ -19,10 +19,12 @@ for scn in "NSRDB"; do
 #        for j in zSalidaIRainWRF_*.nc; do
 #            printf "$j                  \r"
 #            if [ ! -d "/home/rodr/buffalo/rodr/WRF/$scn/data/" ] && [ ! -f "$dr/$j" ]; then
+#            cp $dd/$j $dr/$j
 #            fi
 #       done
 #    done
 #    printf "\n\n"
+    cd
 
     # Sacamos las variables de interés
     python $SCRIPT_DIR/WRF_extract.py $scn
