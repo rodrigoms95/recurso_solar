@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 # Descargamos malla con HSDS
-with h5pyd.File("/nrel/nsrdb/conus/nsrdb_conus_2022.h5") as f:
+with h5pyd.File("/nrel/nsrdb/current/nsrdb_2022.h5") as f:
     meta = pd.DataFrame(f['meta'][...])
 points = meta[ (meta["country"]==b"Mexico")
     | (meta["state"].isin([b"Texas", b"California", b"Nevada"]))
