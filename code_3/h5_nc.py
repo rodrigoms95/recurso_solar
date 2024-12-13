@@ -8,7 +8,7 @@ from dask.diagnostics import ProgressBar
 # Cargamos datos
 dir_d = "/home/rodr/buffalo/rodr/temp/"
 dir_r = "/datos/rodr/recurso_solar/net_load/"
-file_p = f"{dir_r}nsrdb_points.csv"
+file_p = f"/home/rodr/temp/recurso_solar/net_load/nsrdb_points.csv"
 points = pd.read_csv(file_p, index_col = 0).sort_index().index
 
 files = os.listdir(dir_d)
